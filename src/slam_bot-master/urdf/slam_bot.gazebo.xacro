@@ -13,7 +13,7 @@
         <wheelSeparation>0.16</wheelSeparation>
         <wheelDiameter>0.08</wheelDiameter>
         <robotBaseFrame>base_footprint</robotBaseFrame>
-        <torque>20</torque>
+        <torque>10</torque>
         <commandTopic>cmd_vel</commandTopic>
     	<odometryTopic>odom</odometryTopic>
     	<odometryFrame>odom</odometryFrame>
