@@ -1,4 +1,4 @@
-image: /home/xty/Downloads/mymap.pgm
+image: /home/xty/Tiantu/TianTu2024_WS/src/cartographer_ros/maps/mymap.pgm
 resolution: 0.05
 origin: [-9.29309, -10.3156, 0.0]
 negate: 0
