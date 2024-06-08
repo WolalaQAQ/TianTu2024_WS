@@ -16,7 +16,7 @@ git clone https://github.com/RoboMaster/RoboRTS.git
 ````bash
 sudo apt-get install libopus-dev
 sudo apt-get install pkg-config
-sudo apt-get install ros-<your-ros-distro>-vision-msgs
+sudo apt-get install ros-noetic-vision-msgs
 sudo apt-get install ros-noetic-laser-proc
 sudo apt-get install ros-noetic-urg-c
 ````
