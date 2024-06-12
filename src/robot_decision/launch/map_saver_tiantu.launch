@@ -1,0 +1,7 @@
+<launch>
+    <!-- 保存二维建图的结果 -->
+    <!-- filename指定保存指定文件的路径与名字 -->
+    <arg name="filename" value="$(find slam_bot)/maps/icra2d" />
+    <node name="map_save" pkg="map_server" type="map_saver" args="-f $(arg filename)" />
+
+</launch>
