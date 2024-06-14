@@ -24,7 +24,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -290,6 +290,16 @@ Visualization Manager:
       Topic: /move_base/local_costmap/footprint
       Unreliable: false
       Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: false
+      Name: Map
+      Topic: /nav_map
+      Unreliable: false
+      Use Timestamp: false
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -327,7 +337,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 96.6484375
+      Scale: 79.1008071899414
       Target Frame: <Fixed Frame>
       X: 1.7742602825164795
       Y: 1.0233757495880127
@@ -348,5 +358,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1912
-  X: 0
-  Y: 28
+  X: 521
+  Y: 222

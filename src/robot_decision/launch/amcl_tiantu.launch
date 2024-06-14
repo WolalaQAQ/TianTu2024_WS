@@ -3,8 +3,13 @@
 
   <!-- Map server -->
   <arg name="map_file" default="$(find slam_bot)/maps/icra2d.yaml"/>
-  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
-
+  <arg name="nav_map_file" default="$(find slam_bot)/maps/icra2d_nav.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
+    <remap from="map" to="map"/>
+  </node>
+  <node name="nav_map_server" pkg="map_server" type="map_server" args="$(arg nav_map_file)">
+    <remap from="map" to="nav_map"/>
+  </node>
   <!-- Localization-->
 <node pkg="amcl" type="amcl" name="amcl">
   <!-- Publish scans from best pose at a max of 10 Hz -->
