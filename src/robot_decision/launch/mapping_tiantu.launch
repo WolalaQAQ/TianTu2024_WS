@@ -2,10 +2,10 @@
     <!-- <include file="$(find myep_bsae)/launch/myep_base.launch" /> -->
     <!-- <include file="$(find read_laser_data)/launch/laser_change_param.launch" /> -->
 
-    <param name="use_sim_time" value="true"/>
+    <param name="use_sim_time" value="false"/>
     <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
-        <remap from="scan" to="/slam_bot/laser/scan"/>
-        <param name="base_frame" value="base_link"/><!--?????-->
+        <remap from="scan" to="scan"/>
+        <param name="base_frame" value="base_footprint"/><!--?????-->
         <param name="odom_frame" value="odom"/> <!--??????-->
         <param name="map_update_interval" value="5.0"/>
         <param name="maxUrange" value="30.0"/>
@@ -29,7 +29,7 @@
         <param name="xmin" value="-50.0"/>
         <param name="ymin" value="-50.0"/>
         <param name="xmax" value="50.0"/>
-        <param name="ymax" value="50.0"/>
+        <param name="ymax" value="50.0"/>               
         <param name="delta" value="0.05"/>
         <param name="llsamplerange" value="0.01"/>
         <param name="llsamplestep" value="0.01"/>
