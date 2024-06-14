@@ -20,3 +20,75 @@ sudo apt-get install ros-noetic-vision-msgs
 sudo apt-get install ros-noetic-laser-proc
 sudo apt-get install ros-noetic-urg-c
 ````
+
+header: 
+  seq: 0
+  stamp: 
+    secs: 1718361352
+    nsecs:  66535698
+  frame_id: "map"
+pose: 
+  position: 
+    x: 3.461719512939453
+    y: -0.7156164050102234
+    z: 0.0
+  orientation: 
+    x: 0.0
+    y: 0.0
+    z: -0.01960187583884722
+    w: 0.9998078647738267
+
+
+    header: 
+  seq: 1
+  stamp: 
+    secs: 1718361400
+    nsecs: 598585486
+  frame_id: "map"
+pose: 
+  position: 
+    x: 6.6016950607299805
+    y: -0.5210127234458923
+    z: 0.0
+  orientation: 
+    x: 0.0
+    y: 0.0
+    z: 0.721574809752507
+    w: 0.6923364745054483
+
+    ---
+header: 
+  seq: 6
+  stamp: 
+    secs: 1718361551
+    nsecs: 306760885
+  frame_id: "map"
+pose: 
+  position: 
+    x: 3.083817720413208
+    y: 1.6916954517364502
+    z: 0.0
+  orientation: 
+    x: 0.0
+    y: 0.0
+    z: -0.9995634929750112
+    w: 0.02954358
+
+    ---
+header: 
+  seq: 12
+  stamp: 
+    secs: 1718361658
+    nsecs:  17064842
+  frame_id: "map"
+pose: 
+  position: 
+    x: 0.22161200642585754
+    y: -0.21711376309394836
+    z: 0.0
+  orientation: 
+    x: 0.0
+    y: 0.0
+    z: 0.0037476735471838165
+    w: 0.9999929774468338
+---

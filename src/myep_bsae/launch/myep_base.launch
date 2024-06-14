@@ -41,7 +41,7 @@
 
         <!-- Run the rmep_base nodes -->
     <node pkg = "myep_bsae" type="ep_bsae.py" name="ep_bsae" output="screen" />
-    
+    <!-- <inlcude file="$(find urg_node)/launch/urg_lidar.launch"></inlcude> -->
     
       
 </launch>
