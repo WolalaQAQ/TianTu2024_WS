@@ -1,4 +1,4 @@
-image: /home/xty/Tiantu/TianTu2024_WS/src/tiantu_localization/slam_bot-master/maps/icra2d.pgm
+image: /home/tta/tiantu/TianTu2024_WS-master/src/tiantu_localization/slam_bot-master/maps/icra2d.pgm
 resolution: 0.050000
 origin: [-50.000000, -50.000000, 0.000000]
 negate: 0

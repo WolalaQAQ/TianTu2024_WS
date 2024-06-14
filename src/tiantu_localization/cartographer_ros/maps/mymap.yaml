@@ -1,6 +1,0 @@
-image: /home/xty/Tiantu/TianTu2024_WS/src/cartographer_ros/maps/mymap.pgm
-resolution: 0.05
-origin: [-9.29309, -10.3156, 0.0]
-negate: 0
-occupied_thresh: 0.65
-free_thresh: 0.196
