@@ -11,6 +11,7 @@
 #include <jps_planner/distance_map_planner/distance_map_planner.h>
 
 #include <jps_planner/jps_planner/jps_planner.h>
+#include <yaw_controller/yaw_controller.hpp>
 
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Path.h>
@@ -52,8 +53,12 @@ double yaw = 0;
 double arrival_threshold;
 bool goal_done = true;
 
+double target_yaw;
+float Kp_yaw;
+
 ros::Subscriber map_sub;
 bool map_received = false;
+
 
 nav_msgs::Path vec_to_path(const vec_Vecf<2> &vs) {
     nav_msgs::Path path;
@@ -136,6 +141,9 @@ bool plan(const Eigen::Vector2d &start, const Eigen::Vector2d &goal) {
     geometry_msgs::Twist vel_cmd;
     vel_cmd.linear.x = speed_robot.x();
     vel_cmd.linear.y = speed_robot.y();
+    //控制机器人的yaw固定朝向
+    YawController yaw_controller(Kp_yaw, target_yaw, 0.0);
+    yaw_controller.yaw_control(yaw, vel_cmd.angular.z);
     vel_cmd_pub.publish(vel_cmd);
     last_control_time = current_control_time;
 
@@ -227,6 +235,11 @@ int main(int argc, char **argv) {
     ROS_INFO("Create planner node");
 
     arrival_threshold = 0.4;
+
+
+    nh.param("target_yaw", target_yaw, 0.0);
+    nh.param("Kp_yaw", Kp_yaw, 1.0);
+
 
     odom_sub = nh.subscribe("/amcl_pose", 1, odom_callback);
 
