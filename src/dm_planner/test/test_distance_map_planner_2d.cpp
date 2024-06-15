@@ -185,6 +185,9 @@ void timer_plan() {
 }
 
 void odom_callback(const nav_msgs::Odometry::ConstPtr &msg) {
+    //订阅amcl_pose话题，获取机器人的位置和朝向
+    // start = Eigen::Vector2d(msg->pose.pose.position.x, msg->pose.pose.position.y);
+    // yaw = tf2::getYaw(msg->pose.pose.orientation);
     start = Eigen::Vector2d(msg->pose.pose.position.x, msg->pose.pose.position.y);
     yaw = tf2::getYaw(msg->pose.pose.orientation);
 }
