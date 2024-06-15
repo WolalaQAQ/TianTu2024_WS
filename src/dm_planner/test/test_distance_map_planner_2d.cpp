@@ -30,7 +30,7 @@ nav_msgs::OccupancyGrid map_msg;
 
 std::shared_ptr<JPS::OccMapUtil> map_util;
 std::shared_ptr<DMPlanner2D> dm_planner;
-PIDTracker pid_tracker(3, 0, 0.1, 0.5, 0.4, 0.2);
+PIDTracker pid_tracker(2, 0, 0.1, 1.0, 0.4, 0.2);
 
 Eigen::Vector2d start = Eigen::Vector2d::Zero();
 Eigen::Vector2d goal = Eigen::Vector2d::Zero();
@@ -40,6 +40,8 @@ ros::Publisher dmp_path_pub;
 ros::Publisher vel_cmd_pub;
 
 ros::Subscriber odom_sub;
+
+ros::Publisher jps_path_pub;
 
 
 std::atomic<bool> is_time_exceeded(false);
@@ -89,6 +91,7 @@ bool plan(const Eigen::Vector2d &start, const Eigen::Vector2d &goal) {
 
 
     auto toc = std::chrono::high_resolution_clock::now();
+    
     auto duration = std::chrono::duration<double, std::milli>(toc - tic).count();
     ROS_INFO("Planning time: %f ms", duration);
 
@@ -184,10 +187,7 @@ void timer_plan() {
     }
 }
 
-void odom_callback(const nav_msgs::Odometry::ConstPtr &msg) {
-    //订阅amcl_pose话题，获取机器人的位置和朝向
-    // start = Eigen::Vector2d(msg->pose.pose.position.x, msg->pose.pose.position.y);
-    // yaw = tf2::getYaw(msg->pose.pose.orientation);
+void odom_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg) {
     start = Eigen::Vector2d(msg->pose.pose.position.x, msg->pose.pose.position.y);
     yaw = tf2::getYaw(msg->pose.pose.orientation);
 }
@@ -232,6 +232,8 @@ int main(int argc, char **argv) {
 
     dmp_path_pub = nh.advertise<nav_msgs::Path>("/dm/path", 1);
 
+    jps_path_pub = nh.advertise<nav_msgs::Path>("/dm/jps_path",1);
+
     vel_cmd_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
     
     map_sub = nh.subscribe("/nav_map", 1, map_callback);
@@ -250,8 +252,8 @@ int main(int argc, char **argv) {
 
 
     // Set up DMP planner
-    dm_planner->setPotentialRadius(Vec2f(0.5, 0.5));// Set 2D potential field radius
-    dm_planner->setSearchRadius(Vec2f(0.81, 0.81)); // Set the valid search region around given path
+    dm_planner->setPotentialRadius(Vec2f(3.81, 3.81));// Set 2D potential field radius
+    dm_planner->setSearchRadius(Vec2f(3.81, 3.81)); // Set the valid search region around given path
     dm_planner->setMap(map_util, start);            // Set map util for collision checking, must be called before planning
 
 
