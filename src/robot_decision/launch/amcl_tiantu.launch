@@ -47,13 +47,14 @@
   <param name="transform_tolerance" value="0.1"/>
   <param name="recovery_alpha_slow" value="0.0"/>
   <param name="recovery_alpha_fast" value="0.0"/>
-  <!-- <param name="scan_topic" value="/scan_pro"/> -->
+  <param name="scan_topic" value="/scan"/>
   <param name="laser_min_range" value="0.3"/>
+  <remap from="scan" to="scan"/>
 
 </node>
 
   <!-- Move base -->
-  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+  <!-- <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <rosparam file="$(find slam_bot)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find slam_bot)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
     <rosparam file="$(find slam_bot)/config/local_costmap_params.yaml" command="load" />
@@ -67,8 +68,8 @@
     <param name="base_global_planner" type="string" value="navfn/NavfnROS" />
     <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
 
-  </node>
-
+  </node> -->
+  <node name="test_distance_map_planner_2d" pkg = "jps3d" type = "test_distance_map_planner_2d"></node>
   <arg name="rviz_config" default="$(find slam_bot)/rviz/amcl.rviz"/>
 
   <!-- Launch RViz with the specified config file -->

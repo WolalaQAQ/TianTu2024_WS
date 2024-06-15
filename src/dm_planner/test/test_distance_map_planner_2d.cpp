@@ -30,7 +30,7 @@ nav_msgs::OccupancyGrid map_msg;
 
 std::shared_ptr<JPS::OccMapUtil> map_util;
 std::shared_ptr<DMPlanner2D> dm_planner;
-PIDTracker pid_tracker(3, 0, 0.1, 2.5, 0.4, 0.2);
+PIDTracker pid_tracker(3, 0, 0.1, 0.5, 0.4, 0.2);
 
 Eigen::Vector2d start = Eigen::Vector2d::Zero();
 Eigen::Vector2d goal = Eigen::Vector2d::Zero();
@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
 
     arrival_threshold = 0.4;
 
-    odom_sub = nh.subscribe("/odom", 1, odom_callback);
+    odom_sub = nh.subscribe("/amcl_pose", 1, odom_callback);
 
     dmp_path_pub = nh.advertise<nav_msgs::Path>("/dm/path", 1);
 

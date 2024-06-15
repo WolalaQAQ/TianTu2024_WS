@@ -3,8 +3,7 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /Path1
+      Expanded: ~
       Splitter Ratio: 0.5
     Tree Height: 674
   - Class: rviz/Selection
@@ -63,73 +62,24 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        camera:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        camera_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        hokuyo:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        imu:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        link_wheel_BL:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        link_wheel_BR:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        link_wheel_FL:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        link_wheel_FR:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 9.776286125183105
-        Min Value: -1.9501566886901855
+        Max Value: 6.343209743499756
+        Min Value: -1.8410122394561768
         Value: true
       Axis: X
       Channel Name: intensity
@@ -148,7 +98,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.05000000074505806
       Style: Flat Squares
-      Topic: /slam_bot/laser/scan
+      Topic: /scan
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -250,12 +200,12 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: false
+      Enabled: true
       Name: Map
       Topic: /nav_map
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -283,7 +233,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -0.08000008016824722
+      Angle: -0.23500017821788788
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -293,10 +243,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 74.64207458496094
+      Scale: 62.88810348510742
       Target Frame: <Fixed Frame>
-      X: 1.7742602825164795
-      Y: 1.0233757495880127
+      X: 2.5460715293884277
+      Y: -0.20371313393115997
     Saved: ~
 Window Geometry:
   Displays:
@@ -314,5 +264,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1912
-  X: 521
-  Y: 185
+  X: 0
+  Y: 28
