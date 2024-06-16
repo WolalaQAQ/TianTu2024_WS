@@ -1,0 +1,8 @@
+prefix=/home/ltx/Code/TianTu2024_WS/install
+
+Name: roborts_navigation
+Description: Description of roborts_navigation
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

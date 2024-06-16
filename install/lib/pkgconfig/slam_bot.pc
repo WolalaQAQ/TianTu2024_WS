@@ -1,0 +1,8 @@
+prefix=/home/ltx/Code/TianTu2024_WS/install
+
+Name: slam_bot
+Description: Description of slam_bot
+Version: 1.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

@@ -1,0 +1,8 @@
+prefix=/home/ltx/Code/TianTu2024_WS/install
+
+Name: jps3d
+Description: Description of jps3d
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: geometry_msgs nav_msgs roscpp rospy sensor_msgs std_msgs std_srvs tf tf2 tf2_geometry_msgs tf2_ros visualization_msgs
