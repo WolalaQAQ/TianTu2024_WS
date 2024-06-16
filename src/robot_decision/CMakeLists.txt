@@ -121,6 +121,7 @@ include_directories(
 
 ## Declare a C++ library
 add_library(
+  robot_decision_node
   src/robot_decision.cpp
   src/main.cpp
 )

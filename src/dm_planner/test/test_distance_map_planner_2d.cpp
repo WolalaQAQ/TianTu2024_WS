@@ -172,7 +172,7 @@ bool plan(const Eigen::Vector2d &start, const Eigen::Vector2d &goal) {
     vel_cmd.linear.x = speed_robot.x();
     vel_cmd.linear.y = speed_robot.y();
     //控制机器人的yaw固定朝向
-    YawController yaw_controller(Kp_yaw, target_yaw, 0.0);
+    YawController yaw_controller(Kp_yaw,Ki_yaw,target_yaw, yaw);
     float yaw_speed = 0.0;
     yaw_controller.yaw_control(yaw, yaw_speed, delta_time);
     vel_cmd.angular.z = yaw_speed;
@@ -195,7 +195,7 @@ void timer_plan() {
             vel_cmd.linear.x = 0.0;
             vel_cmd.linear.y = 0.0;
             //控制机器人的yaw固定朝向
-            YawController yaw_controller(Kp_yaw, target_yaw, 0.0);
+            YawController yaw_controller(Kp_yaw,Ki_yaw, target_yaw, yaw);
             float yaw_speed = 0.0;
             static auto last_control_time_yaw = std::chrono::high_resolution_clock::now();
             auto current_control_time_yaw = std::chrono::high_resolution_clock::now();
