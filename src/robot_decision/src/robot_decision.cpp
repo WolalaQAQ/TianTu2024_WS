@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "car_decision");
     ros::NodeHandle nh;
 
-    posePub = nh.advertise<geometry_msgs::PoseStamped>("moveit_base/nav_goal", 1);
+    posePub = nh.advertise<geometry_msgs::PoseStamped>("/decision_goal", 1);
 
     // 设置五组点位的坐标，假设是简单的整数值
     float points[POINTNUM][3] = {
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     };
     int currentPointIndex = 0;
 
-    ros::Rate rate(0.2); // 控制每5秒换一个目标点位
+    ros::Rate rate(0.1); // 控制每5秒换一个目标点位
 
     while (ros::ok())
     {
