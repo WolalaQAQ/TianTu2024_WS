@@ -61,6 +61,7 @@ bool goal_done = true;
 
 double target_yaw;
 double Kp_yaw;
+double Ki_yaw;
 
 ros::Subscriber map_sub;
 bool map_received = false;
@@ -173,7 +174,7 @@ bool plan(const Eigen::Vector2d &start, const Eigen::Vector2d &goal) {
     //控制机器人的yaw固定朝向
     YawController yaw_controller(Kp_yaw, target_yaw, 0.0);
     float yaw_speed = 0.0;
-    yaw_controller.yaw_control(yaw, yaw_speed);
+    yaw_controller.yaw_control(yaw, yaw_speed, delta_time);
     vel_cmd.angular.z = yaw_speed;
     vel_cmd_pub.publish(vel_cmd);
     last_control_time = current_control_time;
@@ -189,6 +190,22 @@ void timer_plan() {
         if(currentDistance<=arrival_threshold)
         {
             goal_done = true;
+            //发布yaw控制的速度
+            geometry_msgs::Twist vel_cmd;
+            vel_cmd.linear.x = 0.0;
+            vel_cmd.linear.y = 0.0;
+            //控制机器人的yaw固定朝向
+            YawController yaw_controller(Kp_yaw, target_yaw, 0.0);
+            float yaw_speed = 0.0;
+            static auto last_control_time_yaw = std::chrono::high_resolution_clock::now();
+            auto current_control_time_yaw = std::chrono::high_resolution_clock::now();
+            // 用秒为单位计算时间差
+            double delta_time_yaw = std::chrono::duration<double>(current_control_time_yaw - last_control_time_yaw).count();
+            yaw_controller.yaw_control(yaw, yaw_speed, delta_time_yaw);
+            vel_cmd.angular.z = yaw_speed;
+            vel_cmd_pub.publish(vel_cmd);
+            last_control_time_yaw = current_control_time_yaw;
+            
         }
         if(!goal_done)
         {
@@ -209,7 +226,6 @@ void timer_plan() {
                 std::unique_lock<std::mutex> lock(plan_mutex);
                 if (!plan_cv.wait_for(lock, std::chrono::seconds(2), [&] { return finished; })) {
                     ROS_ERROR("Time exceeded");
-                    
                     is_time_exceeded = true;
                 }
             });
@@ -280,9 +296,12 @@ int main(int argc, char **argv) {
 
     nh.param("/test_distance_map_planner_2d/target_yaw", target_yaw, 0.0);
     nh.param("/test_distance_map_planner_2d/Kp_yaw", Kp_yaw, 1.0);
+    nh.param("/test_distance_map_planner_2d/Ki_yaw", Ki_yaw, 0.0);
+
     std::cout<<"yaw_Kp :"<<Kp_yaw<<std::endl;
     target_yaw = float(target_yaw);
     Kp_yaw = float(Kp_yaw);
+    Ki_yaw = float(Ki_yaw);
 
 
     odom_sub = nh.subscribe("/amcl_pose", 1, odom_callback);
@@ -325,6 +344,7 @@ int main(int argc, char **argv) {
     // timer_plan另外开一个线程，用于规划
     std::thread timer_plan_thread(timer_plan);
     timer_plan_thread.detach();
+
 
     ros::spin();
     ros::shutdown();
