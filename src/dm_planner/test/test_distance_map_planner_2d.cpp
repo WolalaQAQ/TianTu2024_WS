@@ -328,7 +328,7 @@ int main(int argc, char **argv) {
 
     }
 
-    auto goal_sub = nh.subscribe<geometry_msgs::PoseStamped>("/decision_goal", 1, [&](const geometry_msgs::PoseStamped::ConstPtr &msg) {
+    auto goal_sub = nh.subscribe<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1, [&](const geometry_msgs::PoseStamped::ConstPtr &msg) {
         if (start == Eigen::Vector2d::Zero()) {
             ROS_ERROR("Start not set");
             return;

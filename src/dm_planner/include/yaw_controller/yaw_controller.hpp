@@ -16,6 +16,14 @@ public:
             error += 2 * M_PI;
         }
         integral += error * dt;
+        if(integral >= 1)
+        {
+            integral = 1 ;
+        }
+        else if(integral <= -1)
+        {
+            integral = -1 ;
+        }
         yaw_speed = Kp * error+Ki*integral;
 
     }
