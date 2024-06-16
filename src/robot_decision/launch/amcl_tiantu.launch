@@ -69,7 +69,10 @@
     <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
 
   </node> -->
-  <node pkg="jps3d" type="test_distance_map_planner_2d" name="test_distance_map_planner_2d" output="screen"></node>
+  <node pkg="jps3d" type="test_distance_map_planner_2d" name="test_distance_map_planner_2d" output="screen">
+    <param name="Kp_yaw" type="double" value="10" />
+    <param name="target_yaw" type="double" value="0" />
+  </node>
 
   <arg name="rviz_config" default="$(find slam_bot)/rviz/amcl.rviz"/>
 

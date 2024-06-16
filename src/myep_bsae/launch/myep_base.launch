@@ -4,7 +4,7 @@
     <!-- ap , sta , rndis -->
     
     <!-- Camera -->
-    <param name="is_camera" type="bool" value="False" />
+    <param name="is_camera" type="bool" value="True" />
     <param name="camera_image_topic" type="str" value="/camera/image_raw" />
     <param name="camera_info_topic" type="str" value="/camera/camera_info" />
     <param name="resolution" type="str" value="STREAM_360P" />  <!-- STREAM_360P STREAM_720P -->

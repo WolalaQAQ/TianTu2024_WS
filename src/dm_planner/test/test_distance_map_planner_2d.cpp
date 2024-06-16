@@ -278,8 +278,9 @@ int main(int argc, char **argv) {
     dm_planner->setPotentialRadius(Vec2f(3.81, 3.81));// Set 2D potential field radius
     dm_planner->setSearchRadius(Vec2f(3.81, 3.81)); // Set the valid search region around given path
 
-    nh.param("target_yaw", target_yaw, 0.0);
-    nh.param("Kp_yaw", Kp_yaw, 1.0);
+    nh.param("/test_distance_map_planner_2d/target_yaw", target_yaw, 0.0);
+    nh.param("/test_distance_map_planner_2d/Kp_yaw", Kp_yaw, 1.0);
+    std::cout<<"yaw_Kp :"<<Kp_yaw<<std::endl;
     target_yaw = float(target_yaw);
     Kp_yaw = float(Kp_yaw);
 

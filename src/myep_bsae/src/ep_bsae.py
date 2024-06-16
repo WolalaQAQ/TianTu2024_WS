@@ -91,7 +91,7 @@ class EP_ROS:
             self.image_pub = rospy.Publisher(self.camera_image_topic, Image, queue_size=10)
             self.camInfo_pub = rospy.Publisher(self.camera_info_topic, CameraInfo, queue_size=10, latch=True)
             ros_pack = rospkg.RosPack()
-            self.camera_info_path = open('/home/tta/dj_ep/src/myep_bsae/config/head_camera.yaml') #摄像头标定信息yaml文件
+            self.camera_info_path = open('/home/tta/TianTu2024_WS/src/myep_bsae/config/head_camera.yaml') #摄像头标定信息yaml文件
         
         if self.is_gimbal == True:
             self.gimbal_pub = rospy.Publisher('ep_gimbal_fdb', GimbalFdb ,queue_size=10)
