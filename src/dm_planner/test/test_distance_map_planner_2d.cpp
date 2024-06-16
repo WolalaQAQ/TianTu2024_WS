@@ -29,12 +29,18 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 nav_msgs::OccupancyGrid map_msg;
 
-std::shared_ptr<JPS::OccMapUtil> map_util;
+std::shared_ptr<JPSPlanner<2>> planner;
+std::shared_ptr<JPS::MapUtil<2>> map_util;
 std::shared_ptr<DMPlanner2D> dm_planner;
 PIDTracker pid_tracker(2, 0, 0.1, 1.0, 0.4, 0.2);
 
 Eigen::Vector2d start = Eigen::Vector2d::Zero();
 Eigen::Vector2d goal = Eigen::Vector2d::Zero();
+
+
+ros::Publisher path_pub;
+
+ros::Publisher sample_path_pub;
 
 ros::Publisher dmp_path_pub;
 
@@ -54,7 +60,7 @@ double arrival_threshold;
 bool goal_done = true;
 
 double target_yaw;
-float Kp_yaw;
+double Kp_yaw;
 
 ros::Subscriber map_sub;
 bool map_received = false;
@@ -94,20 +100,42 @@ bool plan(const Eigen::Vector2d &start, const Eigen::Vector2d &goal) {
         return false;
     }
 
+    // 使用JPS2D规划器进行路径规划
+    if (!planner->plan(start, goal, 1, true)) {
+        ROS_ERROR("Failed to plan");
+        return false;
+    }
 
     auto toc = std::chrono::high_resolution_clock::now();
-    
     auto duration = std::chrono::duration<double, std::milli>(toc - tic).count();
     ROS_INFO("Planning time: %f ms", duration);
 
     
+    // 获取规划路径
+    auto path = planner->getPath();
+    auto sample_path = planner->getSamplePath();
+
+    auto path_msg = vec_to_path(path);
+    path_msg.header.frame_id = "map";
+    path_msg.header.stamp = ros::Time::now();
+    path_pub.publish(path_msg);
+
+    auto sample_path_msg = vec_to_path(sample_path);
+    sample_path_msg.header.frame_id = "map";
+    sample_path_msg.header.stamp = ros::Time::now();
+    sample_path_pub.publish(sample_path_msg);
 
     // 设计一条直接路径,直接把起点和终点连起来
-    vec_Vecf<2> path_msg_direct;
-    path_msg_direct.push_back(start);
-    path_msg_direct.push_back(goal);
+    // vec_Vecf<2> path_msg_direct;
+    // path_msg_direct.push_back(start);
+    // path_msg_direct.push_back(goal);
 
-    bool valid_dist = dm_planner->computePath(start, goal, path_msg_direct);// 
+    // bool valid_dist = dm_planner->computePath(start, goal, path_msg_direct);// 
+
+    // dm_planner->setCweight(0.5); // Set the weight of collision cost
+    // dm_planner->setMap(map_util, start);            // dm_planner在规划前必须设置地图
+
+    bool valid_dist = dm_planner->computePath(start, goal, path);
 
     if (valid_dist) {
       ROS_INFO("Valid distance map path");
@@ -116,6 +144,7 @@ bool plan(const Eigen::Vector2d &start, const Eigen::Vector2d &goal) {
         ROS_ERROR("Invalid distance map path");
 
     }
+
     // auto path_dist_dmp = dm_planner->getRawPath();
     auto path_dist_dmp = dm_planner->getPath();
     
@@ -143,7 +172,9 @@ bool plan(const Eigen::Vector2d &start, const Eigen::Vector2d &goal) {
     vel_cmd.linear.y = speed_robot.y();
     //控制机器人的yaw固定朝向
     YawController yaw_controller(Kp_yaw, target_yaw, 0.0);
-    yaw_controller.yaw_control(yaw, vel_cmd.angular.z);
+    float yaw_speed = 0.0;
+    yaw_controller.yaw_control(yaw, yaw_speed);
+    vel_cmd.angular.z = yaw_speed;
     vel_cmd_pub.publish(vel_cmd);
     last_control_time = current_control_time;
 
@@ -212,8 +243,8 @@ void map_callback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
         ROS_INFO("Map origin: %f, %f, %f", map_msg.info.origin.position.x,
                 map_msg.info.origin.position.y, map_msg.info.origin.position.z);
 
-        dm_planner = std::make_shared<DMPlanner2D>(true);
-        map_util = std::make_shared<JPS::OccMapUtil>();
+        map_util = std::make_shared<JPS::MapUtil<2>>();
+        ROS_INFO("Map Util created");
 
         const Eigen::Vector2d origin(map_msg.info.origin.position.x, map_msg.info.origin.position.y);
         const Eigen::Vector2i dim(map_msg.info.width, map_msg.info.height);
@@ -222,6 +253,9 @@ void map_callback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
 
         map_util->setMap(origin, dim, map, res);
         map_util->info();
+        planner->setMapUtil(map_util);
+        planner->updateMap();
+        dm_planner->setMap(map_util, start); 
         map_received = true;
     }
     
@@ -236,16 +270,27 @@ int main(int argc, char **argv) {
 
     arrival_threshold = 0.4;
 
+    planner = std::make_shared<JPSPlanner<2>>(true);
+    dm_planner = std::make_shared<DMPlanner2D>(true);
+    
+    // Set up DMP planner
+    dm_planner->setCweight(0.5); // Set the weight of collision cost
+    dm_planner->setPotentialRadius(Vec2f(3.81, 3.81));// Set 2D potential field radius
+    dm_planner->setSearchRadius(Vec2f(3.81, 3.81)); // Set the valid search region around given path
 
     nh.param("target_yaw", target_yaw, 0.0);
     nh.param("Kp_yaw", Kp_yaw, 1.0);
+    target_yaw = float(target_yaw);
+    Kp_yaw = float(Kp_yaw);
 
 
     odom_sub = nh.subscribe("/amcl_pose", 1, odom_callback);
 
     dmp_path_pub = nh.advertise<nav_msgs::Path>("/dm/path", 1);
 
-    jps_path_pub = nh.advertise<nav_msgs::Path>("/dm/jps_path",1);
+    path_pub = nh.advertise<nav_msgs::Path>("/jps/path", 1);
+
+    sample_path_pub = nh.advertise<nav_msgs::Path>("/jps/sample_path", 1);
 
     vel_cmd_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
     
@@ -262,13 +307,6 @@ int main(int argc, char **argv) {
         }
 
     }
-
-
-    // Set up DMP planner
-    dm_planner->setPotentialRadius(Vec2f(3.81, 3.81));// Set 2D potential field radius
-    dm_planner->setSearchRadius(Vec2f(3.81, 3.81)); // Set the valid search region around given path
-    dm_planner->setMap(map_util, start);            // Set map util for collision checking, must be called before planning
-
 
     auto goal_sub = nh.subscribe<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1, [&](const geometry_msgs::PoseStamped::ConstPtr &msg) {
         if (start == Eigen::Vector2d::Zero()) {

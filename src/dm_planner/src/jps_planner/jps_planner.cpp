@@ -21,6 +21,9 @@ vec_Vecf<Dim> JPSPlanner<Dim>::getPath() { return path_; }
 template <int Dim>
 vec_Vecf<Dim> JPSPlanner<Dim>::getRawPath() { return raw_path_; }
 
+template<int Dim>
+vec_Vecf<Dim> JPSPlanner<Dim>::getSamplePath() { return sample_path_; }
+
 template <int Dim>
 vec_Vecf<Dim> JPSPlanner<Dim>::removeCornerPts(const vec_Vecf<Dim> &path) {
   if (path.size() < 2)
@@ -87,6 +90,26 @@ vec_Vecf<Dim> JPSPlanner<Dim>::removeLinePts(const vec_Vecf<Dim> &path) {
   return new_path;
 }
 
+template<int Dim>
+vec_Vecf<Dim> JPSPlanner<Dim>::samplePath(const vec_Vecf<Dim> &path, decimal_t step_size) {
+    if (path.size() < 2)
+        return path;
+
+    vec_Vecf<Dim> new_path;
+    new_path.push_back(path.front());
+    for (unsigned int i = 1; i < path.size(); i++) {
+        Vecf<Dim> p = path[i] - path[i - 1];
+        decimal_t dist = p.norm();
+        int num = floor(dist / step_size);
+        if (num > 1) {
+            Vecf<Dim> delta = p / num;
+            for (int j = 1; j < num; j++)
+                new_path.push_back(path[i - 1] + delta * j);
+        }
+        new_path.push_back(path[i]);
+    }
+    return new_path;
+}
 
 template <int Dim>
 vec_Vecf<Dim> JPSPlanner<Dim>::getOpenSet() const {
@@ -246,6 +269,8 @@ bool JPSPlanner<Dim>::plan(const Vecf<Dim> &start, const Vecf<Dim> &goal, decima
   path_ = removeCornerPts(path_);
   std::reverse(std::begin(path_), std::end(path_));
   path_ = removeLinePts(path_);
+
+  sample_path_ = samplePath(path_, 0.1);
 
   return true;
 }

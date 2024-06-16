@@ -37,10 +37,14 @@ class JPSPlanner
     vec_Vecf<Dim> getPath();
     ///Get the raw path
     vec_Vecf<Dim> getRawPath();
+    ///Get the sample path
+    vec_Vecf<Dim> getSamplePath();
     ///remove redundant points on the same line
     vec_Vecf<Dim> removeLinePts(const vec_Vecf<Dim> &path);
     ///Remove some corner waypoints
     vec_Vecf<Dim> removeCornerPts(const vec_Vecf<Dim> &path);
+    // 采样路径
+    vec_Vecf<Dim> samplePath(const vec_Vecf<Dim> &path, decimal_t step_size);
     ///Must be called before run the planning thread
     void updateMap();
     ///Planning function
@@ -60,6 +64,8 @@ class JPSPlanner
     vec_Vecf<Dim> raw_path_;
     ///Modified path for future usage
     vec_Vecf<Dim> path_;
+    ///采样后的路径，用于放进优化器
+    vec_Vecf<Dim> sample_path_;
     ///Flag indicating the success of planning
     int status_ = 0;
     ///Enabled for printing info
