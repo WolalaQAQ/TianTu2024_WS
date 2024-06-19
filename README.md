@@ -26,6 +26,9 @@ sudo apt-get install ros-noetic-laser-proc
 sudo apt-get install ros-noetic-urg-c
 ````
 
+### yolo_detector依赖安装方法
+[见yolo_detector下的README](./src/yolo_detector/README.md)
+
 # 启动方法
 ## 启动下位机djiep
 ````bash

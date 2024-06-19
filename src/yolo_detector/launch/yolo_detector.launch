@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- YOLO Detector -->
+  <node pkg="yolo_detector" type="yolo_detector_node" name="yolo_detector" output="screen">
+    <remap from="image_raw" to="/camera/image_raw"/>
+
+    <remap from="image_marked" to="/yolo_detector/image_marked"/>
+    <remap from="image_filtered" to="/yolo_detector/image_filtered"/>
+
+    <param name="model_path" value="/home/wolala/文档/TianTu_Code/TianTu2024_WS/src/yolo_detector/model/2024-6-16.onnx"/>
+  </node>
+
+</launch>

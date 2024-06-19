@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Example Image Publisher -->
+  <node pkg="yolo_detector" type="example_image_publisher" name="example_image_publisher" output="screen">
+    <remap from="image_raw" to="/camera/image_raw"/>
+
+    <param name="is_video" type="int" value="1"/>
+    <param name="path" value="/media/wolala/NTFS1/TianTuDataset/video/20240504_221929.mp4"/>
+  </node>
+
+</launch>

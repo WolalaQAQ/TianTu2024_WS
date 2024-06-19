@@ -7,7 +7,10 @@ project(yolo_detector)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+# 这里需要指定到你自己编译的cv_bridge的路径
 set(cv_bridge_DIR /home/wolala/cv_bridge_4.10/share/cv_bridge/cmake)
+
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         image_transport
@@ -138,9 +141,14 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_node
+        src/main.cpp
         src/yolo_detector_node.cpp
         src/yolov8.cpp
         src/yolov8_utils.cpp
+)
+
+add_executable(example_image_publisher
+        src/example_image_publisher.cpp
 )
 
 ## Rename C++ executable without prefix
@@ -155,6 +163,11 @@ add_executable(${PROJECT_NAME}_node
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS}
+)
+
+target_link_libraries(example_image_publisher
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
 )
