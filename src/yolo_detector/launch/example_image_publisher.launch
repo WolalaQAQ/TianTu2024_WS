@@ -4,6 +4,7 @@
   <node pkg="yolo_detector" type="example_image_publisher" name="example_image_publisher" output="screen">
     <remap from="image_raw" to="/camera/image_raw"/>
 
+    <!-- is_video 参数为0时读入图片 参数为1时读入视频-->
     <param name="is_video" type="int" value="1"/>
     <param name="path" value="/media/wolala/NTFS1/TianTuDataset/video/20240504_221929.mp4"/>
   </node>

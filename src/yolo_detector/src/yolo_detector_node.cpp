@@ -1,12 +1,19 @@
 #include "yolo_detector/yolo_detector_node.h"
 
 YoloDetectorNode::YoloDetectorNode(ros::NodeHandle &nh) : nh_(nh), it_(nh) {
-	nh.param("/yolo_detector/model_path", model_path_, std::string(""));
+	nh.getParam("/yolo_detector/model_path", model_path_);
+	nh.getParam("/yolo_detector/use_decision", use_decision_);
+
 	ROS_INFO("Model path = %s", model_path_.c_str());
 	if (model_path_.empty()) {
 		ROS_ERROR("Failed to get model path!");
 		throw std::runtime_error("Failed to get model path!");
 	}
+	if (use_decision_ == -1) {
+		ROS_ERROR("Failed to get use_decision!");
+		throw std::runtime_error("Failed to get use_decision!");
+	}
+
 	if (!detector_.ReadModel(model_path_, false)) {
 		ROS_ERROR("Failed to read model!");
 		throw std::runtime_error("Failed to read model!");
@@ -19,9 +26,18 @@ YoloDetectorNode::YoloDetectorNode(ros::NodeHandle &nh) : nh_(nh), it_(nh) {
 
 	left_to_right_sub_ =
 		nh_.subscribe<std_msgs::Bool>("/decision/left_to_right", 1, &YoloDetectorNode::leftToRightCallback, this, ros::TransportHints().tcpNoDelay());
+
+	get_image_trigger_sub_ =
+		nh_.subscribe<std_msgs::Bool>("/decision/get_image_trigger", 1, &YoloDetectorNode::getImageTriggerCallback, this, ros::TransportHints().tcpNoDelay());
 }
 
 void YoloDetectorNode::getImageCallback(const sensor_msgs::ImageConstPtr &msg) {
+	if (use_decision_ == 1) {
+		if (!get_image_trigger_) {
+			return;
+		}
+	}
+
 	cv_bridge::CvImageConstPtr image_raw_;
 	try {
 		image_raw_ = cv_bridge::toCvShare(msg, "bgr8");
@@ -55,10 +71,18 @@ void YoloDetectorNode::getImageCallback(const sensor_msgs::ImageConstPtr &msg) {
 		ROS_INFO("Published filtered image!");
 	}
 
+	if (use_decision_ == 1) {
+		// 重置trigger
+		get_image_trigger_ = false;
+	}
 }
 
 void YoloDetectorNode::leftToRightCallback(const std_msgs::Bool::ConstPtr &msg) {
 	left_to_right_ = msg->data;
+}
+
+void YoloDetectorNode::getImageTriggerCallback(const std_msgs::Bool::ConstPtr &msg) {
+	get_image_trigger_ = msg->data;
 }
 
 std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<OutputParams> &results, bool left_to_right) {

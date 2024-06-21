@@ -32,16 +32,20 @@ private:
 	image_transport::Publisher image_filtered_pub_;
 
 	ros::Subscriber left_to_right_sub_;
+	ros::Subscriber get_image_trigger_sub_;
 
 	std::string model_path_;
 	Yolov8 detector_;
 
+	int use_decision_ = -1;
 	bool left_to_right_ = true;
+	bool get_image_trigger_ = false;
 
 	std::vector<OutputParams> filterResult(const std::vector<OutputParams>& results, bool left_to_right);
 
 	void getImageCallback(const sensor_msgs::ImageConstPtr& msg);
 	void leftToRightCallback(const std_msgs::Bool::ConstPtr& msg);
+	void getImageTriggerCallback(const std_msgs::Bool::ConstPtr& msg);
 
 };
 
