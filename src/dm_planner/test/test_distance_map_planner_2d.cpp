@@ -1,4 +1,3 @@
-
 #include <atomic>
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -23,10 +22,11 @@
 #include <thread>
 #include <visualization_msgs/Marker.h>
 
+#include <std_msgs/Bool.h>
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2_ros/transform_listener.h>
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_ros/transform_listener.h>
 nav_msgs::OccupancyGrid map_msg;
 
 std::shared_ptr<JPSPlanner<2>> planner;
@@ -49,6 +49,8 @@ ros::Publisher vel_cmd_pub;
 ros::Subscriber odom_sub;
 
 ros::Publisher jps_path_pub;
+
+ros::Publisher arrival_pub;
 
 
 std::atomic<bool> is_time_exceeded(false);
@@ -190,6 +192,7 @@ void timer_plan() {
         if(currentDistance<=arrival_threshold)
         {
             goal_done = true;
+
             //发布yaw控制的速度
             geometry_msgs::Twist vel_cmd;
             vel_cmd.linear.x = 0.0;
@@ -315,6 +318,8 @@ int main(int argc, char **argv) {
     vel_cmd_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
     
     map_sub = nh.subscribe("/nav_map", 1, map_callback);
+
+	arrival_pub = nh.advertise<std_msgs::Bool>("/arrival", 1);
     
     while(ros::ok() && map_received == false) {
         static int count = 0;

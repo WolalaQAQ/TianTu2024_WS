@@ -7,6 +7,8 @@
     <remap from="image_marked" to="/yolo_detector/image_marked"/>
     <remap from="image_filtered" to="/yolo_detector/image_filtered"/>
 
+    <remap from="detect_info" to="/yolo_detector/detect_info"/>
+
     <param name="model_path" value="/home/wolala/文档/TianTu_Code/TianTu2024_WS/src/yolo_detector/model/2024-6-16.onnx"/>
     <param name="use_decision" type="int" value="0"/>
   </node>

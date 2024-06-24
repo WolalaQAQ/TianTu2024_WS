@@ -5,8 +5,8 @@
     <remap from="image_raw" to="/camera/image_raw"/>
 
     <!-- is_video 参数为0时读入图片 参数为1时读入视频-->
-    <param name="is_video" type="int" value="1"/>
-    <param name="path" value="/media/wolala/NTFS1/TianTuDataset/video/20240504_221929.mp4"/>
+    <param name="is_video" type="int" value="0"/>
+    <param name="path" value="/media/wolala/NTFS1/TianTuDataset/total_dataset/images/20240504_221929_56.png"/>
   </node>
 
 </launch>

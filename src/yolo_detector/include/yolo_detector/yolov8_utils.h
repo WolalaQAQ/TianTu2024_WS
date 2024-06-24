@@ -1,7 +1,7 @@
 #pragma once
-#include<iostream>
+#include <iostream>
 #include <numeric>
-#include<opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 
 #ifdef _WIN32
 #include <io.h>

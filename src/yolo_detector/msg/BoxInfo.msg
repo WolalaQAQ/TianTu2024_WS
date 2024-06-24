@@ -1,0 +1,2 @@
+uint32 good_count
+uint32 bad_count

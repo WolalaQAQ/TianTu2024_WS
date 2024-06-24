@@ -63,7 +63,7 @@ bool Yolov8::Detect(const cv::Mat &srcImg, std::vector<OutputParams> &output) {
 	_net.forward(net_output_img, _net.getUnconnectedOutLayersNames()); //get outputs
 	std::vector<int> class_ids;// res-class_id
 	std::vector<float> confidences;// res-conf 
-	std::vector<cv::Rect> boxes;// res-box
+	std::vector<cv::Rect> boxes;// res-output_params
 	cv::Mat output0 =
 		cv::Mat(cv::Size(net_output_img[0].size[2], net_output_img[0].size[1]), CV_32F, (float *)net_output_img[0].data)
 			.t();  //[bs,116,8400]=>[bs,8400,116]

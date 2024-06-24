@@ -4,51 +4,56 @@
 
 #ifndef BUILD_SRC_YOLO_DETECTOR_INCLUDE_YOLO_DETECTOR_YOLO_DETECTOR_NODE_H
 
-#include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
+#include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <yolo_detector/StartDetect.h>
 
 #include "yolo_detector/yolov8.h"
 
 enum ObjectType {
-  	BAD = 0,
+	BAD = 0,
 	BOX = 1,
 	GOOD = 2
+};
+
+struct Box {
+	OutputParams output_params;
+	std::vector<OutputParams> bad_cards;
+	std::vector<OutputParams> good_cards;
 };
 
 class YoloDetectorNode {
 public:
 	YoloDetectorNode() = delete;
-	explicit YoloDetectorNode(ros::NodeHandle& nh);
+	explicit YoloDetectorNode(ros::NodeHandle &nh);
 
 private:
-  	ros::NodeHandle nh_;
+	ros::NodeHandle nh_;
 	image_transport::ImageTransport it_;
-
 	image_transport::Subscriber image_raw_sub_;
 
 	image_transport::Publisher image_marked_pub_;
 	image_transport::Publisher image_filtered_pub_;
 
-	ros::Subscriber left_to_right_sub_;
-	ros::Subscriber get_image_trigger_sub_;
+	ros::ServiceServer start_detect_service_;
 
 	std::string model_path_;
 	Yolov8 detector_;
 
-	int use_decision_ = -1;
-	bool left_to_right_ = true;
-	bool get_image_trigger_ = false;
+	sensor_msgs::ImageConstPtr latest_img_;
+	std::mutex image_mtx_;
 
-	std::vector<OutputParams> filterResult(const std::vector<OutputParams>& results, bool left_to_right);
+	int detect_count_ = 0;
 
-	void getImageCallback(const sensor_msgs::ImageConstPtr& msg);
-	void leftToRightCallback(const std_msgs::Bool::ConstPtr& msg);
-	void getImageTriggerCallback(const std_msgs::Bool::ConstPtr& msg);
+	std::vector<OutputParams> filterResult(const std::vector<OutputParams> &results, bool left_to_right);
+
+	void getImageCallback(const sensor_msgs::ImageConstPtr &msg);
+	bool startDetectCallback(yolo_detector::StartDetect::Request &req, yolo_detector::StartDetect::Response &res);
 
 };
 
 #define BUILD_SRC_YOLO_DETECTOR_INCLUDE_YOLO_DETECTOR_YOLO_DETECTOR_NODE_H
 
-#endif //BUILD_SRC_YOLO_DETECTOR_INCLUDE_YOLO_DETECTOR_YOLO_DETECTOR_NODE_H
+#endif//BUILD_SRC_YOLO_DETECTOR_INCLUDE_YOLO_DETECTOR_YOLO_DETECTOR_NODE_H

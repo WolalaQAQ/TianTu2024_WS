@@ -24,7 +24,7 @@ private:
   //类别名，自己的模型需要修改此项
   const std::vector<std::string> _className = {
 	  "bad",
-	  "box",
+	  "output_params",
 	  "good",
   };
 

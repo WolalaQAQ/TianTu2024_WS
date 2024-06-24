@@ -8,22 +8,18 @@ add_compile_options(-std=c++17)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  nav_msgs
-  roscpp
-  rospy
-  sensor_msgs
-  std_msgs
-  geometry_msgs
-  actionlib_msgs
-  move_base_msgs
-  tf2
-  message_generation
-  cv_bridge
-  image_transport
+        nav_msgs
+        roscpp
+        sensor_msgs
+        std_msgs
+        geometry_msgs
+        tf2
+        message_generation
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_package(Eigen3 REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -64,8 +60,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate services in the 'srv' folder
 add_service_files(
-  FILES
-  setgoal.srv
+        FILES
+        setgoal.srv
+        StartDecision.srv
 )
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -75,9 +72,9 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   std_msgs
+generate_messages(
+        DEPENDENCIES
+        std_msgs
 )
 
 ################################################
@@ -110,10 +107,10 @@ add_service_files(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES 
-  CATKIN_DEPENDS nav_msgs roscpp rospy sensor_msgs std_msgs 
-  DEPENDS system_lib
+        INCLUDE_DIRS include
+        LIBRARIES
+        CATKIN_DEPENDS nav_msgs roscpp sensor_msgs std_msgs
+        DEPENDS system_lib
 )
 
 ###########
@@ -123,8 +120,9 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
+        include
+        ${catkin_INCLUDE_DIRS}
+        ${EIGEN3_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -142,7 +140,10 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(robot_decision_node src/robot_decision.cpp)
+add_executable(robot_decision_node
+        src/main.cpp
+        src/robot_decision.cpp
+)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -156,7 +157,7 @@ add_dependencies(robot_decision_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catki
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(robot_decision_node
-  ${catkin_LIBRARIES}
+        ${catkin_LIBRARIES}
 )
 
 #############
