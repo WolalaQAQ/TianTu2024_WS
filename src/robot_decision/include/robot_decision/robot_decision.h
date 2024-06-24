@@ -34,7 +34,7 @@ private:
 	int mission_id_ = -1;
 
 	bool moving_ = false;
-	bool arrival_ = false;
+	bool arrival_ = true;
 
 	std::vector<double> target_points_flat_;
 	std::vector<Eigen::Vector3d> target_points_;

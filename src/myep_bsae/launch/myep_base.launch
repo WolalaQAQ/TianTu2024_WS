@@ -37,10 +37,11 @@
     <param name="chassis_shape_b" value="0.1" />
     <param name="chassis_wheel_r" value="0.05" />
     <param name="chassis_freq" type="int" value="50" /> <!-- 1, 5, 10, 20, 50 -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="laser" args="0.09 0 0 0 0 0 /base_footprint /laser" output="screen" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="laser" args="0.21 0 0 0 0 0 /base_footprint /laser" output="screen" />
 
         <!-- Run the rmep_base nodes -->
     <node pkg = "myep_bsae" type="ep_bsae.py" name="ep_bsae" output="screen" />
+
     <!-- <inlcude file="$(find urg_node)/launch/urg_lidar.launch"></inlcude> -->
     
       

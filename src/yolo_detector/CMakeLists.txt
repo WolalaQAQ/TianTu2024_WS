@@ -7,10 +7,7 @@ project(yolo_detector)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-
-# 这里需要指定到你自己编译的cv_bridge的路径
-set(cv_bridge_DIR /home/wolala/cv_bridge_4.10/share/cv_bridge/cmake)
-
+set(cv_bridge_DIR /home/tta/cv_bridge_4.10/share/cv_bridge/cmake)
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         image_transport

@@ -4,7 +4,7 @@
 
 RobotDecision::RobotDecision(ros::NodeHandle &nh) : nh_(nh) {
 	ROS_INFO("RobotDecision Node Started");
-	nh_.getParam("/robot_decision/target_points", target_points_flat_);
+	nh_.getParam("/target_points", target_points_flat_);
 	if (target_points_flat_.empty() || target_points_flat_.size() % 3 != 0) {
 		ROS_ERROR("Invalid target points");
 		return;
@@ -81,7 +81,7 @@ void RobotDecision::moveToTarget() {
 			current_state_ = 2;
 		}
 
-		std::this_thread::sleep_for(std::chrono::seconds(3));
+		std::this_thread::sleep_for(std::chrono::seconds(5));
 	} else if (moving_ && !arrival_) {
 		ROS_INFO("Moving to target point %d", mission_id_);
 		// No operation needed, just logging the state
@@ -101,6 +101,7 @@ void RobotDecision::startDetect() {
 		ROS_INFO("Mission 2 is special, detect nothing!");
 		current_state_ = 1;
 		mission_id_++;
+		return;
 	}
 
 	// 我没想好怎么处理重试的逻辑，所以这里直接用goto了
@@ -167,7 +168,12 @@ SERVICE_CALL:
 void RobotDecision::saveResult() {
 	ROS_INFO("Saving result for mission %d", mission_id_);
 	std::ofstream file;
-	file.open("list_of_goods.csv");
+	file.open("/home/tta/TianTu2024_WS/list_of_goods.csv");
+	// 检查文件是否成功打开
+    if (!file) {
+        std::cerr << "Unable to open or create file";
+        return; // 退出程序，返回非零值表示错误
+    }
 	file << "房间,好人,坏人\n";
 	for (const auto &[shelf, box_info] : shelf_info_) {
 		file << shelf.first << "-" << shelf.second << "," << box_info.good_count << "," << box_info.bad_count << "\n";

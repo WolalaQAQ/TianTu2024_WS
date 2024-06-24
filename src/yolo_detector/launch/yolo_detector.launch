@@ -9,7 +9,7 @@
 
     <remap from="detect_info" to="/yolo_detector/detect_info"/>
 
-    <param name="model_path" value="/home/wolala/文档/TianTu_Code/TianTu2024_WS/src/yolo_detector/model/2024-6-16.onnx"/>
+    <param name="model_path" value="/home/tta/TianTu2024_WS/src/yolo_detector/model/2024-6-16.onnx"/>
     <param name="use_decision" type="int" value="0"/>
   </node>
 

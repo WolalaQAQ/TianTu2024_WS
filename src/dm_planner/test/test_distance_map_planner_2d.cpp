@@ -192,7 +192,9 @@ void timer_plan() {
         if(currentDistance<=arrival_threshold)
         {
             goal_done = true;
-
+            std_msgs::Bool arrival_msg;
+            arrival_msg.data = true;
+            arrival_pub.publish(arrival_msg);
             //发布yaw控制的速度
             geometry_msgs::Twist vel_cmd;
             vel_cmd.linear.x = 0.0;
