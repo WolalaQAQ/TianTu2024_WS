@@ -27,6 +27,9 @@
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
+
+#include <sensor_msgs/Imu.h>
+
 nav_msgs::OccupancyGrid map_msg;
 
 std::shared_ptr<JPSPlanner<2>> planner;
@@ -66,6 +69,9 @@ double Kp_yaw;
 double Ki_yaw;
 
 ros::Subscriber map_sub;
+
+ros::Subscriber imu_sub; // 声明 IMU 订阅器
+
 bool map_received = false;
 
 
@@ -249,7 +255,7 @@ void timer_plan() {
 
 void odom_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg) {
     start = Eigen::Vector2d(msg->pose.pose.position.x, msg->pose.pose.position.y);
-    yaw = tf2::getYaw(msg->pose.pose.orientation);
+//    yaw = tf2::getYaw(msg->pose.pose.orientation);
 }
 
 void map_callback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
@@ -280,6 +286,13 @@ void map_callback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
         map_received = true;
     }
     
+}
+
+// IMU回调函数
+void imu_callback(const sensor_msgs::Imu::ConstPtr &msg) {
+    tf2::Quaternion quat;
+    tf2::convert(msg->orientation, quat);
+    yaw = tf2::getYaw(quat);
 }
 
 int main(int argc, char **argv) {
@@ -320,6 +333,8 @@ int main(int argc, char **argv) {
     vel_cmd_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
     
     map_sub = nh.subscribe("/nav_map", 1, map_callback);
+
+    imu_sub = nh.subscribe("/imu", 1, imu_callback);
 
 	arrival_pub = nh.advertise<std_msgs::Bool>("/arrival", 1);
     
