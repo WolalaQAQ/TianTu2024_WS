@@ -2,10 +2,11 @@
 
 class YawController {
 public:
-    YawController(float Kp,float Ki,float target_yaw,float current_yaw) {
+    YawController(float Kp,float Ki,float target_yaw,float current_yaw,float dead_zone) {
         this->Kp = Kp;
         this->Ki = Ki;
         this->target_yaw = target_yaw;
+        this->dead_zone = dead_zone;
     }
 
     void yaw_control(float current_yaw, float &yaw_speed,float dt) {

@@ -61,12 +61,14 @@ std::mutex plan_mutex;
 std::condition_variable plan_cv;
 
 double yaw = 0;
+double yaw_imu = 0;
 double arrival_threshold;
 bool goal_done = true;
 
 double target_yaw;
 double Kp_yaw;
 double Ki_yaw;
+double dead_zone;
 
 ros::Subscriber map_sub;
 
@@ -180,9 +182,9 @@ bool plan(const Eigen::Vector2d &start, const Eigen::Vector2d &goal) {
     vel_cmd.linear.x = speed_robot.x();
     vel_cmd.linear.y = speed_robot.y();
     //控制机器人的yaw固定朝向
-    YawController yaw_controller(Kp_yaw,Ki_yaw,target_yaw, yaw);
+    YawController yaw_controller(Kp_yaw,Ki_yaw,target_yaw, yaw_imu,dead_zone);
     float yaw_speed = 0.0;
-    yaw_controller.yaw_control(yaw, yaw_speed, delta_time);
+    yaw_controller.yaw_control(yaw_imu, yaw_speed, delta_time);
     vel_cmd.angular.z = yaw_speed;
     vel_cmd_pub.publish(vel_cmd);
     last_control_time = current_control_time;
@@ -206,13 +208,13 @@ void timer_plan() {
             vel_cmd.linear.x = 0.0;
             vel_cmd.linear.y = 0.0;
             //控制机器人的yaw固定朝向
-            YawController yaw_controller(Kp_yaw,Ki_yaw, target_yaw, yaw);
+            YawController yaw_controller(Kp_yaw,Ki_yaw, target_yaw, yaw_imu,dead_zone);
             float yaw_speed = 0.0;
             static auto last_control_time_yaw = std::chrono::high_resolution_clock::now();
             auto current_control_time_yaw = std::chrono::high_resolution_clock::now();
             // 用秒为单位计算时间差
             double delta_time_yaw = std::chrono::duration<double>(current_control_time_yaw - last_control_time_yaw).count();
-            yaw_controller.yaw_control(yaw, yaw_speed, delta_time_yaw);
+            yaw_controller.yaw_control(yaw_imu, yaw_speed, delta_time_yaw);
             vel_cmd.angular.z = yaw_speed;
             vel_cmd_pub.publish(vel_cmd);
             last_control_time_yaw = current_control_time_yaw;
@@ -255,7 +257,8 @@ void timer_plan() {
 
 void odom_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg) {
     start = Eigen::Vector2d(msg->pose.pose.position.x, msg->pose.pose.position.y);
-//    yaw = tf2::getYaw(msg->pose.pose.orientation);
+   yaw = tf2::getYaw(msg->pose.pose.orientation);
+   
 }
 
 void map_callback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
@@ -292,7 +295,9 @@ void map_callback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
 void imu_callback(const sensor_msgs::Imu::ConstPtr &msg) {
     tf2::Quaternion quat;
     tf2::convert(msg->orientation, quat);
-    yaw = tf2::getYaw(quat);
+    yaw_imu = tf2::getYaw(quat);
+    yaw_imu= float(yaw_imu);
+    ROS_INFO("YAW_IMU: %f",yaw_imu);
 }
 
 int main(int argc, char **argv) {
@@ -315,11 +320,12 @@ int main(int argc, char **argv) {
     nh.param("/test_distance_map_planner_2d/target_yaw", target_yaw, 0.0);
     nh.param("/test_distance_map_planner_2d/Kp_yaw", Kp_yaw, 1.0);
     nh.param("/test_distance_map_planner_2d/Ki_yaw", Ki_yaw, 0.0);
-
+    nh.param("/test_distance_map_planner_2d/dead_zone", dead_zone, 0.0);
     std::cout<<"yaw_Kp :"<<Kp_yaw<<std::endl;
     target_yaw = float(target_yaw);
     Kp_yaw = float(Kp_yaw);
     Ki_yaw = float(Ki_yaw);
+    dead_zone = float(dead_zone);
 
 
     odom_sub = nh.subscribe("/amcl_pose", 1, odom_callback);
