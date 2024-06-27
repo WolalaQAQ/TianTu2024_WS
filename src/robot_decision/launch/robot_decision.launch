@@ -4,7 +4,7 @@
   <!-- 加载YAML文件中的参数 -->
   <rosparam file="$(find robot_decision)/param/params.yaml" command="load"/>
 
-  <node pkg="robot_decision" type="robot_decision_node" name="robot_decision" output="screen">
+  <node pkg="robot_decision" type="robot_decision_node" name="robot_decision">
 
   </node>
 

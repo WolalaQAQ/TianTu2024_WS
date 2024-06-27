@@ -38,7 +38,7 @@ public:
     }
 
     private:
-        float dead_zone = (2 / 180.0) * M_PI ; //控制死区，这个区间内不进行控制
+        float dead_zone; //控制死区，这个区间内不进行控制
         float Kp; //比例系数
         float Ki; //积分系数
         float target_yaw; //目标角度

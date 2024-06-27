@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-
+  <!-- <include file="$(find myep_bsae)/launch/myep_base.launch"></include> -->
   <!-- Map server -->
   <arg name="map_file" default="$(find slam_bot)/maps/icra2d.yaml"/>
   <arg name="nav_map_file" default="$(find slam_bot)/maps/icra2d_nav.yaml"/>
@@ -53,33 +53,20 @@
 
 </node>
 
-  <!-- Move base -->
-  <!-- <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <rosparam file="$(find slam_bot)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
-    <rosparam file="$(find slam_bot)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
-    <rosparam file="$(find slam_bot)/config/local_costmap_params.yaml" command="load" />
-    <rosparam file="$(find slam_bot)/config/global_costmap_params.yaml" command="load" />
-    <rosparam file="$(find slam_bot)/config/base_local_planner_params.yaml" command="load" />
-
-    <remap from="cmd_vel" to="/cmd_vel"/>
-    <remap from="odom" to="/odom"/>
-    <remap from="scan" to="scan"/>
-
-    <param name="base_global_planner" type="string" value="navfn/NavfnROS" />
-    <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
-
-  </node> -->
   <node pkg="jps3d" type="test_distance_map_planner_2d" name="test_distance_map_planner_2d" output="screen">
-    <param name="Kp_yaw" type="double" value="-2.3" />
+    <param name="Kp_yaw" type="double" value="-4" />
     <param name="target_yaw" type="double" value="0" />
-    <param name="Ki_yaw" type="double" value="-0.15" />
-    <param name="dead_zone" type="double" value="0.043" />
+    <param name="Ki_yaw" type="double" value="0" />
+    <param name="dead_zone" type="double" value="0" />
   </node>
 
   <arg name="rviz_config" default="$(find slam_bot)/rviz/amcl.rviz"/>
 
+  
   <!-- Launch RViz with the specified config file -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" />
+
+  <include file="$(find yolo_detector)/launch/yolo_detector.launch"></include>
 
 
 </launch>
