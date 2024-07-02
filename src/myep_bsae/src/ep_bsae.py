@@ -403,24 +403,52 @@ class EP_ROS:
     #图像发布线程
     def image_pub_th(self):
         while not rospy.is_shutdown():
-            #try:
+            # try:
+            #     img = self.ep_camera.read_cv2_image()
+            #     header = Header(stamp = rospy.Time.now())
+            #     header.frame_id = self.camera_info.header.frame_id
+            #     cv_img = self.bridge.cv2_to_imgmsg(img, "bgr8")
+            #     size = img.shape
+            #     cv_img.header=header
+            #     cv_img.width = size[1]
+            #     cv_img.height = size[0]
+            #     cv_img.encoding = "bgr8"
+            #     cv_img.data = cv_img.data
+            #     self.camera_info.header = header
+            #     self.camInfo_pub.publish(self.camera_info)
+            #     self.image_pub.publish(cv_img) #发布消息
+            #     cv2.waitKey(1)
+            # except:
+            #      print("[ERROR]Please Check Your Robot Camera12")
+            #      sys.exit()
+            try:
                 img = self.ep_camera.read_cv2_image()
-                header = Header(stamp = rospy.Time.now())
+                self.last_image = img  # 更新最后成功获取的图像
+            except Exception as e:
+                if self.last_image is not None:
+                    print("[INFO] Using the last available frame.")
+                    img = self.last_image
+                else:
+                    print(f"[ERROR] Please Check Your Robot Camera: {str(e)}")
+                    rospy.signal_shutdown("Camera error")  # 优雅地关闭节点
+                    continue  # 继续循环，直到ros节点完全关闭
+
+            try:
+                header = Header(stamp=rospy.Time.now())
                 header.frame_id = self.camera_info.header.frame_id
                 cv_img = self.bridge.cv2_to_imgmsg(img, "bgr8")
                 size = img.shape
-                cv_img.header=header
+                cv_img.header = header
                 cv_img.width = size[1]
                 cv_img.height = size[0]
                 cv_img.encoding = "bgr8"
-                cv_img.data = cv_img.data
                 self.camera_info.header = header
                 self.camInfo_pub.publish(self.camera_info)
-                self.image_pub.publish(cv_img) #发布消息
+                self.image_pub.publish(cv_img)  # 发布消息
                 cv2.waitKey(1)
-            # except:
-            #     print("[ERROR]Please Check Your Robot Camera12")
-            #     sys.exit()
+            except CvBridgeError as cvbe:
+                print(f"[ERROR] CvBridge Error: {cvbe}")
+                continue  # 即使转换出错，也继续下一帧的处理
     
     #底盘数据发布线程
     def chassis_pub_th(self):
