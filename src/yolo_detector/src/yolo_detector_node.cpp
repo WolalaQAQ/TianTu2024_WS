@@ -82,10 +82,13 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 		char time_str[20];
 		strftime(time_str, sizeof(time_str), "%Y%m%d%H%M%S", ltm);
 
+		std::filesystem::path raw_image_save_path = image_save_path_ / (std::string(time_str) + "_raw_" + std::to_string(detect_count_) + ".jpg");
 		std::filesystem::path marker_image_save_path = image_save_path_ / (std::string(time_str) + "_marker_" + std::to_string(detect_count_) + ".jpg");
 		std::filesystem::path filtered_image_save_path = image_save_path_ / (std::string(time_str) + "_filtered_" + std::to_string(detect_count_) + ".jpg");
+		cv::imwrite(raw_image_save_path, image_raw_->image);
 		cv::imwrite(marker_image_save_path, markedImg);
 		cv::imwrite(filtered_image_save_path, filteredImg);
+		ROS_INFO("Saved raw image to %s", raw_image_save_path.c_str());
 		ROS_INFO("Saved marked image to %s", marker_image_save_path.c_str());
 		ROS_INFO("Saved filtered image to %s", filtered_image_save_path.c_str());
 	}
@@ -156,14 +159,22 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 		}
 	}
 
-	// 按照矩形框面积，对箱子进行排序，从大到小，只保留最大的8个箱子
+	// 按照矩形框面积，对箱子进行排序，从大到小，只保留最大的9个箱子
 	std::sort(boxes.begin(), boxes.end(), [](const OutputParams &a, const OutputParams &b) {
 		return a.box.area() > b.box.area();
 	});
 
-	if (boxes.size() > 8) {
-		boxes.resize(8);
+	if (boxes.size() > 9) {
+		boxes.resize(9);
 	}
+
+	// 按照矩形长宽比筛选矩形框，不符合标准的移除
+	boxes.erase(
+		std::remove_if(boxes.begin(), boxes.end(), [](const OutputParams &box) {
+			float ratio = (float)box.box.width / (float)box.box.height;
+			return ratio > 1.25 || ratio < 2.0;
+		}),
+		boxes.end());
 
 	// 再按照x坐标，对箱子进行排序，从左到右，如果left_to_right为false，则从右到左
 	std::vector<OutputParams> left_3;
