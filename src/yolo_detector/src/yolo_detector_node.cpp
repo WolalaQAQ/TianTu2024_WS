@@ -81,9 +81,12 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 		char time_str[20];
 		strftime(time_str, sizeof(time_str), "%Y%m%d%H%M%S", ltm);
 
-		std::filesystem::path save_path = image_save_path_ / (std::string(time_str) + "_" + std::to_string(detect_count_) + ".jpg");
-		cv::imwrite(save_path, filteredImg);
-		ROS_INFO("Saved marked image to %s", save_path.c_str());
+		std::filesystem::path marker_image_save_path = image_save_path_ / (std::string(time_str) + "_marker_" + std::to_string(detect_count_) + ".jpg");
+		std::filesystem::path filtered_image_save_path = image_save_path_ / (std::string(time_str) + "_filtered_" + std::to_string(detect_count_) + ".jpg");
+		cv::imwrite(marker_image_save_path, markedImg);
+		cv::imwrite(filtered_image_save_path, filteredImg);
+		ROS_INFO("Saved marked image to %s", marker_image_save_path.c_str());
+		ROS_INFO("Saved filtered image to %s", filtered_image_save_path.c_str());
 	}
 
 	if (image_filtered_pub_.getNumSubscribers() > 0) {
