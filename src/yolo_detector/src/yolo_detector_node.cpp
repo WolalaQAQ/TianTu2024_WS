@@ -75,7 +75,13 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 	detector_.DrawResult(filteredImg, filtered_result_, false);
 
 	if (save_marker_image_) {
-		std::filesystem::path save_path = image_save_path_ / (std::to_string(detect_count_) + ".jpg");
+		// 转换成YYYY/MM/DD HH:MM:SS格式
+		time_t now = time(nullptr);
+		tm *ltm = localtime(&now);
+		char time_str[20];
+		strftime(time_str, sizeof(time_str), "%Y%m%d%H%M%S", ltm);
+
+		std::filesystem::path save_path = image_save_path_ / (std::string(time_str) + "_" + std::to_string(detect_count_) + ".jpg");
 		cv::imwrite(save_path, filteredImg);
 		ROS_INFO("Saved marked image to %s", save_path.c_str());
 	}
