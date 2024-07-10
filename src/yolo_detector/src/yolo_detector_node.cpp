@@ -3,10 +3,15 @@
 #include "yolo_detector/BoxInfo.h"
 #include "yolo_detector/DetectInfo.h"
 
-YoloDetectorNode::YoloDetectorNode(ros::NodeHandle &nh) : nh_(nh), it_(nh) {
-	nh.getParam("/yolo_detector/model_path", model_path_);
 
-	ROS_INFO("Model path = %s", model_path_.c_str());
+YoloDetectorNode::YoloDetectorNode(ros::NodeHandle &nh) : nh_(nh), it_(nh) {
+	nh_.getParam("/yolo_detector/model_path", model_path_);
+	nh_.getParam("/yolo_detector/save_marker_image", save_marker_image_);
+	std::string image_save_path;
+	nh_.getParam("/yolo_detector/save_image_path", image_save_path);
+	image_save_path_ = std::filesystem::path(image_save_path);
+
+	ROS_INFO("Model path = %s, Save Marker Image = %d, Image Save Path = %s", model_path_.c_str(), save_marker_image_, image_save_path.c_str());
 	if (model_path_.empty()) {
 		ROS_ERROR("Failed to get model path!");
 		throw std::runtime_error("Failed to get model path!");
@@ -68,6 +73,12 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 	cv::Mat filteredImg = image_raw_->image.clone();
 	auto filtered_result_ = filterResult(output, req.left_to_right);
 	detector_.DrawResult(filteredImg, filtered_result_, false);
+
+	if (save_marker_image_) {
+		std::filesystem::path save_path = image_save_path_ / (std::to_string(detect_count_) + ".jpg");
+		cv::imwrite(save_path, filteredImg);
+		ROS_INFO("Saved marked image to %s", save_path.c_str());
+	}
 
 	if (image_filtered_pub_.getNumSubscribers() > 0) {
 		sensor_msgs::ImagePtr msg_filtered = cv_bridge::CvImage(std_msgs::Header(), "bgr8", filteredImg).toImageMsg();

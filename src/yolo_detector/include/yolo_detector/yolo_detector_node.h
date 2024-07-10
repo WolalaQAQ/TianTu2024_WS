@@ -4,6 +4,8 @@
 
 #ifndef BUILD_SRC_YOLO_DETECTOR_INCLUDE_YOLO_DETECTOR_YOLO_DETECTOR_NODE_H
 
+#include <filesystem>
+
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <ros/ros.h>
@@ -40,6 +42,8 @@ private:
 	ros::ServiceServer start_detect_service_;
 
 	std::string model_path_;
+	bool save_marker_image_;
+	std::filesystem::path image_save_path_;
 	Yolov8 detector_;
 
 	sensor_msgs::ImageConstPtr latest_img_;
