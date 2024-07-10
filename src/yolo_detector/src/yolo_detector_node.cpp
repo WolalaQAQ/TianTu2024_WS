@@ -172,7 +172,7 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 	boxes.erase(
 		std::remove_if(boxes.begin(), boxes.end(), [](const OutputParams &box) {
 			float ratio = (float)box.box.width / (float)box.box.height;
-			return ratio > 1.25 || ratio < 2.0;
+			return ratio < 1.34 || ratio > 2.88;
 		}),
 		boxes.end());
 
@@ -192,8 +192,8 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 		boxes.resize(6);
 	}
 	if (left_to_right) {
-		left_3 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 3);
-		right_3 = std::vector<OutputParams>(boxes.begin() + 3, boxes.end());
+		left_3 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + left_3.size());
+		right_3 = std::vector<OutputParams>(boxes.begin() + left_3.size(), boxes.end());
 	} else {
 		right_3 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 3);
 		left_3 = std::vector<OutputParams>(boxes.begin() + 3, boxes.end());
