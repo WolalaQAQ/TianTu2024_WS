@@ -46,98 +46,108 @@ roslaunch robot_decision map_saver_tiantu.launch  # 建图结束后保存地图
 ````
 ## 待补充
 
-first point
- 2.07573 -0.802356
-
- ➜  TianTu2024_WS git:(master) ✗ rostopic echo /move_base_simple/goal
 header: 
-  seq: 1
+  seq: 0
   stamp: 
-    secs: 1719234586
-    nsecs: 982694771
+    secs: 1719841441
+    nsecs: 441099649
   frame_id: "map"
 pose: 
   position: 
-    x: 4.759303092956543
-    y: -0.7254384756088257
+    x: 2.0238935947418213
+    y: -1.0188543796539307
     z: 0.0
   orientation: 
     x: 0.0
     y: 0.0
-    z: 0.06961035085633668
-    w: 0.9975742574132803
+    z: 7.529745191438187e-05
+    w: 0.9999999971651469
 
-    header: 
+header: 
+  seq: 0
+  stamp: 
+    secs: 1719842450
+    nsecs: 914747614
+  frame_id: "map"
+pose: 
+  position: 
+    x: 5.202322959899902
+    y: -1.0604170560836792
+    z: 0.0
+  orientation: 
+    x: 0.0
+    y: 0.0
+    z: 0.01797217224256599
+    w: 0.9998384874692929
+---
+header: 
+  seq: 2
+  stamp: 
+    secs: 1719842507
+    nsecs: 765902887
+  frame_id: "map"
+pose: 
+  position: 
+    x: 6.580988883972168
+    y: 2.2393453121185303
+    z: 0.0
+  orientation: 
+    x: 0.0
+    y: 0.0
+    z: 0.9992119548969758
+    w: 0.0396921804763107
+---
+---
+header: 
+  seq: 4
+  stamp: 
+    secs: 1719842554
+    nsecs: 618092299
+  frame_id: "map"
+pose: 
+  position: 
+    x: 5.251081466674805
+    y: 1.3968594074249268
+    z: 0.0
+  orientation: 
+    x: 0.0
+    y: 0.0
+    z: 0.0905946822060595
+    w: 0.9958878468763354
+---
+header: 
   seq: 6
   stamp: 
-    secs: 1719234700
-    nsecs:  29794963
+    secs: 1719842584
+    nsecs: 650757273
   frame_id: "map"
 pose: 
   position: 
-    x: 6.731288909912109
-    y: 1.0915144681930542
+    x: 1.8356785774230957
+    y: 1.6096141338348389
     z: 0.0
   orientation: 
     x: 0.0
     y: 0.0
-    z: 0.7237183896773542
-    w: 0.6900954227082058
+    z: 0.00180444454175531
+    w: 0.9999983719886226
+---
 
-  ---
+---
 header: 
   seq: 7
   stamp: 
-    secs: 1719234728
-    nsecs:   1334177
+    secs: 1719842607
+    nsecs: 463056230
   frame_id: "map"
 pose: 
   position: 
-    x: 4.628156661987305
-    y: 1.5950546264648438
+    x: -0.1554727554321289
+    y: -0.21910059452056885
     z: 0.0
   orientation: 
     x: 0.0
     y: 0.0
-    z: -0.002547952616382761
-    w: 0.999996753963464
----
-
-
----
-header: 
-  seq: 8
-  stamp: 
-    secs: 1719234765
-    nsecs: 405151465
-  frame_id: "map"
-pose: 
-  position: 
-    x: 1.9674516916275024
-    y: 1.5453630685806274
-    z: 0.0
-  orientation: 
-    x: 0.0
-    y: 0.0
-    z: 0.011884984141320235
-    w: 0.9999293710817583
----
-
----
-header: 
-  seq: 12
-  stamp: 
-    secs: 1719234845
-    nsecs: 403999269
-  frame_id: "map"
-pose: 
-  position: 
-    x: 0.7704163789749146
-    y: -0.24457277357578278
-    z: 0.0
-  orientation: 
-    x: 0.0
-    y: 0.0
-    z: -0.007085665441170547
-    w: 0.9999748963575315
+    z: -0.022898669145267524
+    w: 0.9997377910989339
 ---

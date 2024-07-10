@@ -18,3 +18,5 @@ logs/
 .catkin_workspace
 
 images
+
+list_of_goods.csv
