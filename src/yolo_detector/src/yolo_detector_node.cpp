@@ -159,22 +159,22 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 		}
 	}
 
-	// 按照矩形框面积，对箱子进行排序，从大到小，只保留最大的9个箱子
+	// 按照矩形长宽比筛选矩形框，不符合标准的移除
+	boxes.erase(
+		std::remove_if(boxes.begin(), boxes.end(), [](const OutputParams &box) {
+		  float ratio = (float)box.box.width / (float)box.box.height;
+		  return ratio < 1.34 || ratio > 2.88;
+		}),
+		boxes.end());
+
+	// 按照矩形框面积，对箱子进行排序，从大到小，只保留最大的6个箱子
 	std::sort(boxes.begin(), boxes.end(), [](const OutputParams &a, const OutputParams &b) {
 		return a.box.area() > b.box.area();
 	});
 
-	if (boxes.size() > 9) {
-		boxes.resize(9);
+	if (boxes.size() > 6) {
+		boxes.resize(6);
 	}
-
-	// 按照矩形长宽比筛选矩形框，不符合标准的移除
-	boxes.erase(
-		std::remove_if(boxes.begin(), boxes.end(), [](const OutputParams &box) {
-			float ratio = (float)box.box.width / (float)box.box.height;
-			return ratio < 1.34 || ratio > 2.88;
-		}),
-		boxes.end());
 
 	// 再按照x坐标，对箱子进行排序，从左到右，如果left_to_right为false，则从右到左
 	std::vector<OutputParams> left_3;
