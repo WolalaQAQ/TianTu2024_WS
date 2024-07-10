@@ -93,9 +93,9 @@ void RobotDecision::moveToTarget() {
 void RobotDecision::startDetect() {
 	ROS_INFO("Start Detecting for mission %d", mission_id_);
 	yolo_detector::StartDetect srv;
-	if (mission_id_ == 0 || mission_id_ == 3) {
+	if (mission_id_ == 0 || mission_id_ == 4) {
 		srv.request.left_to_right = true;
-	} else if (mission_id_ == 1 || mission_id_ == 4) {
+	} else if (mission_id_ == 1 || mission_id_ == 3) {
 		srv.request.left_to_right = false;
 	} else if (mission_id_ == 2) {
 		ROS_INFO("Mission 2 is special, detect nothing!");

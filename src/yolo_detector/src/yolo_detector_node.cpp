@@ -38,6 +38,7 @@ void YoloDetectorNode::getImageCallback(const sensor_msgs::ImageConstPtr &msg) {
 
 bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &req, yolo_detector::StartDetect::Response &res) {
 	std::lock_guard<std::mutex> lock(image_mtx_);
+	ROS_INFO("Get detect service call with left_to_right = %d", req.left_to_right);
 	if (latest_img_ == nullptr) {
 		ROS_ERROR("No image received!");
 		res.success = false;
@@ -155,13 +156,13 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 		}
 	}
 
-	// 按照矩形框面积，对箱子进行排序，从大到小，只保留最大的9个箱子
+	// 按照矩形框面积，对箱子进行排序，从大到小，只保留最大的8个箱子
 	std::sort(boxes.begin(), boxes.end(), [](const OutputParams &a, const OutputParams &b) {
 		return a.box.area() > b.box.area();
 	});
 
-	if (boxes.size() > 9) {
-		boxes.resize(9);
+	if (boxes.size() > 8) {
+		boxes.resize(8);
 	}
 
 	// 再按照x坐标，对箱子进行排序，从左到右，如果left_to_right为false，则从右到左
