@@ -141,14 +141,6 @@ SERVICE_CALL:
 				shelf_info_[{1, 12}] = srv.response.detect_info.box_infos.at(5);
 				break;
 			case 3:
-				shelf_info_[{2, 1}] = srv.response.detect_info.box_infos.at(0);
-				shelf_info_[{2, 5}] = srv.response.detect_info.box_infos.at(1);
-				shelf_info_[{2, 9}] = srv.response.detect_info.box_infos.at(2);
-				shelf_info_[{2, 2}] = srv.response.detect_info.box_infos.at(3);
-				shelf_info_[{2, 6}] = srv.response.detect_info.box_infos.at(4);
-				shelf_info_[{2, 10}] = srv.response.detect_info.box_infos.at(5);
-				break;
-			case 4:
 				shelf_info_[{2, 3}] = srv.response.detect_info.box_infos.at(0);
 				shelf_info_[{2, 7}] = srv.response.detect_info.box_infos.at(1);
 				shelf_info_[{2, 11}] = srv.response.detect_info.box_infos.at(2);
@@ -156,6 +148,15 @@ SERVICE_CALL:
 				shelf_info_[{2, 8}] = srv.response.detect_info.box_infos.at(4);
 				shelf_info_[{2, 12}] = srv.response.detect_info.box_infos.at(5);
 				break;
+			case 4:
+				shelf_info_[{2, 1}] = srv.response.detect_info.box_infos.at(0);
+				shelf_info_[{2, 5}] = srv.response.detect_info.box_infos.at(1);
+				shelf_info_[{2, 9}] = srv.response.detect_info.box_infos.at(2);
+				shelf_info_[{2, 2}] = srv.response.detect_info.box_infos.at(3);
+				shelf_info_[{2, 6}] = srv.response.detect_info.box_infos.at(4);
+				shelf_info_[{2, 10}] = srv.response.detect_info.box_infos.at(5);
+				break;
+
 			case 2:
 				// No operation needed
 				break;
