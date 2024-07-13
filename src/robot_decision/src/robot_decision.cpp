@@ -113,6 +113,7 @@ void RobotDecision::startDetect() {
 	}
 
 	// 我没想好怎么处理重试的逻辑，所以这里直接用goto了
+	// 66666666666666
 SERVICE_CALL:
 	bool flag = detect_client_.call(srv);
 
