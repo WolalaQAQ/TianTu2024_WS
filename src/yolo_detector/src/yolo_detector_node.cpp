@@ -72,8 +72,13 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 	}
 
 	cv::Mat filteredImg = image_raw_->image.clone();
-	auto filtered_result_ = filterResult(output, req.left_to_right);
+	auto filtered_result_ = filterResult(output, req.left_to_right, req.second_shelf);
 	detector_.DrawResult(filteredImg, filtered_result_, false);
+	if (filtered_result_.size() < 6) {
+		ROS_ERROR("Invalid box info size!");
+		res.success = false;
+		return false;
+	}
 
 	if (save_marker_image_) {
 		// 转换成YYYY/MM/DD HH:MM:SS格式
@@ -144,7 +149,9 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 	return true;
 }
 
-std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<OutputParams> &results, bool left_to_right) {
+std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<OutputParams> &results,
+														 bool left_to_right,
+														 bool second_shelf) {
 	std::vector<OutputParams> filteredResult;
 
 	std::vector<OutputParams> boxes;
@@ -163,17 +170,43 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 	boxes.erase(
 		std::remove_if(boxes.begin(), boxes.end(), [](const OutputParams &box) {
 		  float ratio = (float)box.box.width / (float)box.box.height;
-		  return ratio < 1.34 || ratio > 2.88;
+		  return ratio < 1.23 || ratio > 2.98;
 		}),
 		boxes.end());
 
-	// 按照矩形框面积，对箱子进行排序，从大到小，只保留最大的6个箱子
+	// 按照矩形框的面积，对箱子进行排序，从大到小
 	std::sort(boxes.begin(), boxes.end(), [](const OutputParams &a, const OutputParams &b) {
 		return a.box.area() > b.box.area();
 	});
 
-	if (boxes.size() > 6) {
-		boxes.resize(6);
+	auto max_box_size = 6;
+	if (second_shelf) {
+		max_box_size = 8;
+	}
+
+	if (boxes.size() > max_box_size) {
+		boxes.resize(max_box_size);
+	}
+
+	// 按照距离基点距离，对箱子进行排序，从小到大
+	if (second_shelf) {
+		std::sort(boxes.begin(), boxes.end(), [left_to_right, this](const OutputParams &a, const OutputParams &b) {
+		  cv::Point2i base_point;
+		  if (left_to_right) {
+			  base_point = cv::Point2i(0, 0);
+		  } else {
+			  base_point = cv::Point2i(this->latest_img_->width, 0);
+		  }
+		  cv::Point2i center_a = (a.box.tl() + a.box.br())/2;
+		  cv::Point2i center_b = (b.box.tl() + b.box.br())/2;
+		  auto distance_a = cv::norm(center_a - base_point);
+		  auto distance_b = cv::norm(center_b - base_point);
+		  return distance_a < distance_b;
+		});
+
+		if (boxes.size() > 6) {
+			boxes.resize(6);
+		}
 	}
 
 	// 再按照x坐标，对箱子进行排序，从左到右，如果left_to_right为false，则从右到左
@@ -190,10 +223,14 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 	// 将排序后的箱子分别放入left_3和right_3中
 	if (boxes.size() > 6) {
 		boxes.resize(6);
+	} else if (boxes.size() < 6) {
+		ROS_ERROR("Invalid box size!");
+		return filteredResult;
 	}
+
 	if (left_to_right) {
-		left_3 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + left_3.size());
-		right_3 = std::vector<OutputParams>(boxes.begin() + left_3.size(), boxes.end());
+		left_3 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 3);
+		right_3 = std::vector<OutputParams>(boxes.begin() + 3, boxes.end());
 	} else {
 		right_3 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 3);
 		left_3 = std::vector<OutputParams>(boxes.begin() + 3, boxes.end());

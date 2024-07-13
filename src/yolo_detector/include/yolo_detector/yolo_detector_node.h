@@ -51,7 +51,9 @@ private:
 
 	int detect_count_ = 0;
 
-	std::vector<OutputParams> filterResult(const std::vector<OutputParams> &results, bool left_to_right);
+	std::vector<OutputParams> filterResult(const std::vector<OutputParams> &results,
+										   bool left_to_right,
+										   bool second_shelf);
 
 	void getImageCallback(const sensor_msgs::ImageConstPtr &msg);
 	bool startDetectCallback(yolo_detector::StartDetect::Request &req, yolo_detector::StartDetect::Response &res);

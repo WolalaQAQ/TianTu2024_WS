@@ -1,4 +1,5 @@
 bool left_to_right
+bool second_shelf
 ---
 bool success
 DetectInfo detect_info
