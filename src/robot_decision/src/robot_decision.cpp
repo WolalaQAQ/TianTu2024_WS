@@ -70,7 +70,7 @@ void RobotDecision::moveToTarget() {
 
 		if (mission_id_ == 2) {
 			ROS_INFO("Mission 2 is special, waiting for drone landing!");
-			std::this_thread::sleep_for(std::chrono::seconds(5));
+			std::this_thread::sleep_for(std::chrono::seconds(180));
 			current_state_ = 2;
 		}
 
@@ -195,9 +195,10 @@ void RobotDecision::saveResult() {
 bool RobotDecision::startCallback(robot_decision::StartDecision::Request &req, robot_decision::StartDecision::Response &res) {
 	if (req.start == true) {
 		ROS_INFO("Start decision service called with true");
+		ros::Duration(8).sleep();
 		start_trigger_ = true;
 		current_state_ = 1;
-		mission_id_ = 0;
+		mission_id_ = 0;	
 	} else {
 		ROS_INFO("Start decision service called with false");
 		start_trigger_ = false;
