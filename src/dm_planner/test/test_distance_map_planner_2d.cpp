@@ -307,7 +307,8 @@ int main(int argc, char **argv) {
 
     ROS_INFO("Create planner node");
 
-    arrival_threshold = 0.35;
+    arrival_threshold = 0.4
+    ;
 
     planner = std::make_shared<JPSPlanner<2>>(true);
     dm_planner = std::make_shared<DMPlanner2D>(true);
