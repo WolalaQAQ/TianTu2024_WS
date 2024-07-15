@@ -64,7 +64,7 @@
 
   
   <!-- Launch RViz with the specified config file -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" />
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" /> -->
 
   <!-- <include file="$(find yolo_detector)/launch/yolo_detector.launch"></include> -->
 

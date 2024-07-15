@@ -167,12 +167,12 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 	}
 
 	// 按照矩形长宽比筛选矩形框，不符合标准的移除
-	boxes.erase(
-		std::remove_if(boxes.begin(), boxes.end(), [](const OutputParams &box) {
-		  float ratio = (float)box.box.width / (float)box.box.height;
-		  return ratio < 1.23 || ratio > 2.98;
-		}),
-		boxes.end());
+	// boxes.erase(
+	// 	std::remove_if(boxes.begin(), boxes.end(), [](const OutputParams &box) {
+	// 	  float ratio = (float)box.box.width / (float)box.box.height;
+	// 	  return ratio < 1.23 || ratio > 2.98;
+	// 	}),
+	// 	boxes.end());
 
 	// 按照矩形框的面积，对箱子进行排序，从大到小
 	std::sort(boxes.begin(), boxes.end(), [](const OutputParams &a, const OutputParams &b) {

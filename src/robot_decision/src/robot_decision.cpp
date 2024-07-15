@@ -70,7 +70,7 @@ void RobotDecision::moveToTarget() {
 
 		if (mission_id_ == 2) {
 			ROS_INFO("Mission 2 is special, waiting for drone landing!");
-			std::this_thread::sleep_for(std::chrono::seconds(5));
+			std::this_thread::sleep_for(std::chrono::seconds(90));
 			current_state_ = 2;
 		}
 
