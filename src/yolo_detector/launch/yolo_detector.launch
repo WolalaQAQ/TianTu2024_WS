@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <!-- YOLO Detector -->
-  <node pkg="yolo_detector" type="yolo_detector_node" name="yolo_detector" output="screen">
+  <node pkg="yolo_detector" type="yolo_detector_node" name="yolo_detector">
     <remap from="image_raw" to="/camera/image_raw"/>
 
     <remap from="image_marked" to="/yolo_detector/image_marked"/>

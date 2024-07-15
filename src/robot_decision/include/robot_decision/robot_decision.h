@@ -4,6 +4,7 @@
 #include <thread>
 #include <memory>
 #include <std_msgs/Bool.h>
+#include <std_srvs/SetBool.h>
 #include <Eigen/Eigen>
 #include <fstream>
 
@@ -21,10 +22,12 @@ public:
 	~RobotDecision();
 private:
   	ros::NodeHandle nh_;
+	
 	ros::ServiceServer start_service_;
 	ros::ServiceClient detect_client_;
 	// 创建一个在同一wifi下接收无人机发送完成起降的服务
 	ros::ServiceServer charge_service_;
+	ros::Timer timer_;
 
 	ros::Publisher target_pub_;
 	ros::Subscriber arrival_sub_;
