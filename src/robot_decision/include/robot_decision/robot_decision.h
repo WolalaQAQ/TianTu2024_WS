@@ -23,11 +23,14 @@ private:
   	ros::NodeHandle nh_;
 	ros::ServiceServer start_service_;
 	ros::ServiceClient detect_client_;
+	// 创建一个在同一wifi下接收无人机发送完成起降的服务
+	ros::ServiceServer charge_service_;
 
 	ros::Publisher target_pub_;
 	ros::Subscriber arrival_sub_;
 
 	std::shared_ptr<std::thread> work_thread_;
+    bool mission_completed_ = false;
 
 	bool start_trigger_ = false;
 	int current_state_ = 0;
@@ -49,6 +52,8 @@ private:
 
 	bool startCallback(robot_decision::StartDecision::Request& req, robot_decision::StartDecision::Response& res);
 	void arrivalCallback(const std_msgs::Bool::ConstPtr& msg);
+	bool chargeCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
+    void timerCallback(const ros::TimerEvent &event);
 
 };
 

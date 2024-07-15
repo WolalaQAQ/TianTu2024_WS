@@ -18,6 +18,7 @@ RobotDecision::RobotDecision(ros::NodeHandle &nh) : nh_(nh) {
 	work_thread_ = std::make_shared<std::thread>(&RobotDecision::work, this);
 	arrival_sub_ = nh_.subscribe("arrival", 1, &RobotDecision::arrivalCallback, this);
 	target_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
+    charge_service_ = nh_.advertiseService("charge_decision", &RobotDecision::chargeCallback, this);
 }
 
 RobotDecision::~RobotDecision() {
@@ -68,11 +69,14 @@ void RobotDecision::moveToTarget() {
 		ROS_INFO("Arrived at target point %d", mission_id_);
 		moving_ = false;
 
-		if (mission_id_ == 2) {
-			ROS_INFO("Mission 2 is special, waiting for drone landing!");
-			std::this_thread::sleep_for(std::chrono::seconds(90));
-			current_state_ = 2;
-		}
+        if (mission_id_ == 2) {
+            ROS_INFO("Mission 2 is special, waiting for drone landing!");
+            mission_completed_ = false;
+
+            // 设置90秒计时器
+            timer_ = nh_.createTimer(ros::Duration(90), &RobotDecision::timerCallback, this, true);
+
+        }
 
 		if (mission_id_ == 5) {
 			ROS_INFO("All missions completed, waiting for save result");
@@ -210,4 +214,24 @@ bool RobotDecision::startCallback(robot_decision::StartDecision::Request &req, r
 
 void RobotDecision::arrivalCallback(const std_msgs::Bool::ConstPtr &msg) {
 	arrival_ = msg->data;
+}
+bool RobotDecision::chargeCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
+    if (req.data) {
+        ROS_INFO("Charge decision service called with true");
+        mission_completed_ = true;
+        current_state_ = 2;
+        timer_.stop(); // 停止计时器
+        res.success = true;
+    } else {
+        ROS_INFO("Charge decision service called with false");
+        res.success = false;
+    }
+    return true;
+}
+
+void RobotDecision::timerCallback(const ros::TimerEvent &event) {
+    if (!mission_completed_) {
+        ROS_INFO("Timeout of 90 seconds reached.");
+        current_state_ = 2;
+    }
 }
