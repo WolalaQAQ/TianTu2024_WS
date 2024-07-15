@@ -73,7 +73,6 @@ void RobotDecision::moveToTarget() {
             ROS_INFO("Mission 2 is special, waiting for drone landing!");
             mission_completed_ = false;
             timer_ = nh_.createTimer(ros::Duration(90), &RobotDecision::timerCallback, this, true);
-
         }
 
 		if (mission_id_ == 5) {
@@ -112,6 +111,9 @@ void RobotDecision::startDetect() {
 	} else if (mission_id_ == 2) {
 		ROS_INFO("Mission 2 is special, detect nothing!");
 		return;
+	}else if (mission_id_ == 10){
+		ROS_INFO("Recv CB,carry out mission 3");
+		mission_id_ =3;
 	}
 
 	// 我没想好怎么处理重试的逻辑，所以这里直接用goto了
@@ -219,7 +221,7 @@ bool RobotDecision::chargeCallback(std_srvs::SetBool::Request &req, std_srvs::Se
         mission_completed_ = true;
 		moving_ = false;
 		current_state_ = 1;
-		mission_id_++;
+		mission_id_ = 10;
         timer_.stop(); // 停止计时器
         res.success = true;
     } else {
@@ -233,7 +235,7 @@ void RobotDecision::timerCallback(const ros::TimerEvent &event) {
     if (!mission_completed_) {
         ROS_INFO("Timeout of 90 seconds reached.");
         current_state_ = 1;
-		mission_id_++;
+		mission_id_ = 10;
 		moving_ = false;
     }
 }

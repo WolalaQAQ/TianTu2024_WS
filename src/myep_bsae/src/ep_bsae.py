@@ -91,7 +91,8 @@ class EP_ROS:
             self.image_pub = rospy.Publisher(self.camera_image_topic, Image, queue_size=10)
             self.camInfo_pub = rospy.Publisher(self.camera_info_topic, CameraInfo, queue_size=10, latch=True)
             ros_pack = rospkg.RosPack()
-            self.camera_info_path = open('/home/tta/TianTu2024_WS/src/myep_bsae/config/head_camera.yaml') #摄像头标定信息yaml文件
+            # self.camera_info_path = open('/home/tta/TianTu2024_WS/src/myep_bsae/config/head_camera.yaml') #摄像头标定信息yaml文件
+            self.camera_info_path = '/home/tta/TianTu2024_WS/src/myep_bsae/config/head_camera.yaml'  # 摄像头标定信息yaml文件路径
         
         if self.is_gimbal == True:
             self.gimbal_pub = rospy.Publisher('ep_gimbal_fdb', GimbalFdb ,queue_size=10)
@@ -382,45 +383,63 @@ class EP_ROS:
 
      # Camera_info 数据包
     def make_camera_info(self):
-        self.camera_info = CameraInfo()
-        self.cam_data = yaml.safe_load(self.camera_info_path )
+        try:
+            self.camera_info = CameraInfo()
+            with open(self.camera_info_path, 'r') as file:
+                self.cam_data = yaml.safe_load(file)
 
-        self.camera_info.header = rospy.Header(stamp = rospy.Time.now())
-        self.camera_info.header.frame_id = self.cam_data["camera_name"]
+            self.camera_info.header = rospy.Header(stamp=rospy.Time.now())
+            self.camera_info.header.frame_id = self.cam_data["camera_name"]
 
-        self.camera_info.distortion_model = self.cam_data["distortion_model"]
-        self.camera_info.width = self.cam_data['image_width']
-        self.camera_info.height = self.cam_data['image_height']
-        self.camera_info.binning_x = 0
-        self.camera_info.binning_y = 0
+            self.camera_info.distortion_model = self.cam_data["distortion_model"]
+            self.camera_info.width = self.cam_data['image_width']
+            self.camera_info.height = self.cam_data['image_height']
+            self.camera_info.binning_x = 0
+            self.camera_info.binning_y = 0
 
-        self.camera_info.K = self.cam_data['camera_matrix']['data']
-        self.camera_info.D = self.cam_data['distortion_coefficients']['data']
-        self.camera_info.R = self.cam_data['rectification_matrix']['data']
-        self.camera_info.P = self.cam_data['projection_matrix']['data']
-        self.camInfo_pub.publish(self.camera_info)
+            self.camera_info.K = self.cam_data['camera_matrix']['data']
+            self.camera_info.D = self.cam_data['distortion_coefficients']['data']
+            self.camera_info.R = self.cam_data['rectification_matrix']['data']
+            self.camera_info.P = self.cam_data['projection_matrix']['data']
+            self.camInfo_pub.publish(self.camera_info)
+        except Exception as e:
+            rospy.logerr(f"Error in make_camera_info: {e}")
+            raise
 
-    #图像发布线程
     def image_pub_th(self):
         while not rospy.is_shutdown():
-            #try:
-                img = self.ep_camera.read_cv2_image()
-                header = Header(stamp = rospy.Time.now())
+            try:
+                img = self.ep_camera.read_cv2_image(strategy="newest")
+                if img is None:
+                    rospy.logwarn("No image frame received from camera")
+                    continue
+
+                header = Header(stamp=rospy.Time.now())
                 header.frame_id = self.camera_info.header.frame_id
+
                 cv_img = self.bridge.cv2_to_imgmsg(img, "bgr8")
                 size = img.shape
-                cv_img.header=header
+                cv_img.header = header
                 cv_img.width = size[1]
                 cv_img.height = size[0]
                 cv_img.encoding = "bgr8"
                 cv_img.data = cv_img.data
+
                 self.camera_info.header = header
                 self.camInfo_pub.publish(self.camera_info)
-                self.image_pub.publish(cv_img) #发布消息
+                self.image_pub.publish(cv_img)  # 发布消息
                 cv2.waitKey(1)
-            # except:
-            #     print("[ERROR]Please Check Your Robot Camera12")
-            #     sys.exit()
+            except Exception as e:
+                rospy.logerr(f"Error in image_pub_th: {e}")
+                rospy.logerr("Please Check Your Robot Camera")
+                self.ep_camera.stop_video_stream()
+                self.ep_camera = self.ep_robot.camera
+                if self.resolution == 'STREAM_360P':
+                    self.ep_camera.start_video_stream(display=False, resolution=camera.STREAM_360P)
+                else:
+                    self.ep_camera.start_video_stream(display=False, resolution=camera.STREAM_720P)
+                continue  # 不退出程序，而是继续尝试读取图像
+
     
     #底盘数据发布线程
     def chassis_pub_th(self):
