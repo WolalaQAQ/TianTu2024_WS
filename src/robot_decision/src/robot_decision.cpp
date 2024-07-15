@@ -56,6 +56,10 @@ void RobotDecision::work() {
 void RobotDecision::moveToTarget() {
 	if (!moving_ && arrival_) {
 		ROS_INFO("Start Moving to target point %d", mission_id_);
+		if(mission_id_==10){
+			ROS_INFO("Change to mission 3");
+			mission_id_ = 3;
+		}
 		geometry_msgs::PoseStamped target;
 		target.header.frame_id = "map";
 		target.header.stamp = ros::Time::now();
