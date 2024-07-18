@@ -3,7 +3,6 @@
 #include "yolo_detector/BoxInfo.h"
 #include "yolo_detector/DetectInfo.h"
 
-
 YoloDetectorNode::YoloDetectorNode(ros::NodeHandle &nh) : nh_(nh), it_(nh) {
 	nh_.getParam("/yolo_detector/model_path", model_path_);
 	nh_.getParam("/yolo_detector/save_marker_image", save_marker_image_);
@@ -11,7 +10,10 @@ YoloDetectorNode::YoloDetectorNode(ros::NodeHandle &nh) : nh_(nh), it_(nh) {
 	nh_.getParam("/yolo_detector/save_image_path", image_save_path);
 	image_save_path_ = std::filesystem::path(image_save_path);
 
-	ROS_INFO("Model path = %s, Save Marker Image = %d, Image Save Path = %s", model_path_.c_str(), save_marker_image_, image_save_path.c_str());
+	ROS_INFO("Model path = %s, Save Marker Image = %d, Image Save Path = %s",
+			 model_path_.c_str(),
+			 save_marker_image_,
+			 image_save_path.c_str());
 	if (model_path_.empty()) {
 		ROS_ERROR("Failed to get model path!");
 		throw std::runtime_error("Failed to get model path!");
@@ -36,10 +38,11 @@ void YoloDetectorNode::getImageCallback(const sensor_msgs::ImageConstPtr &msg) {
 	this->latest_img_ = msg;
 }
 
-bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &req, yolo_detector::StartDetect::Response &res) {
+bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &req,
+										   yolo_detector::StartDetect::Response &res) {
 	std::lock_guard<std::mutex> lock(image_mtx_);
 	ROS_INFO("Get detect service call with left_to_right = %d", req.left_to_right);
-	if (latest_img_ == nullptr) {
+	if (latest_img_==nullptr) {
 		ROS_ERROR("No image received!");
 		res.success = false;
 		return false;
@@ -72,7 +75,7 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 	}
 
 	cv::Mat filteredImg = image_raw_->image.clone();
-	auto filtered_result_ = filterResult(output, req.left_to_right, req.second_shelf);
+	auto filtered_result_ = filterResult(filteredImg, output, req.left_to_right, req.second_shelf);
 	detector_.DrawResult(filteredImg, filtered_result_, false);
 	if (filtered_result_.size() < 6) {
 		ROS_ERROR("Invalid box info size!");
@@ -87,9 +90,12 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 		char time_str[20];
 		strftime(time_str, sizeof(time_str), "%Y%m%d%H%M%S", ltm);
 
-		std::filesystem::path raw_image_save_path = image_save_path_ / (std::string(time_str) + "_raw_" + std::to_string(detect_count_) + ".jpg");
-		std::filesystem::path marker_image_save_path = image_save_path_ / (std::string(time_str) + "_marker_" + std::to_string(detect_count_) + ".jpg");
-		std::filesystem::path filtered_image_save_path = image_save_path_ / (std::string(time_str) + "_filtered_" + std::to_string(detect_count_) + ".jpg");
+		std::filesystem::path raw_image_save_path =
+			image_save_path_/(std::string(time_str) + "_raw_" + std::to_string(detect_count_) + ".jpg");
+		std::filesystem::path marker_image_save_path =
+			image_save_path_/(std::string(time_str) + "_marker_" + std::to_string(detect_count_) + ".jpg");
+		std::filesystem::path filtered_image_save_path =
+			image_save_path_/(std::string(time_str) + "_filtered_" + std::to_string(detect_count_) + ".jpg");
 		cv::imwrite(raw_image_save_path, image_raw_->image);
 		cv::imwrite(marker_image_save_path, markedImg);
 		cv::imwrite(filtered_image_save_path, filteredImg);
@@ -107,7 +113,7 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 	// 构造Box结构体
 	std::vector<Box> boxes;
 	for (const auto &item : filtered_result_) {
-		if (item.id == ObjectType::BOX) {
+		if (item.id==ObjectType::BOX) {
 			Box box;
 			box.output_params = item;
 			boxes.emplace_back(box);
@@ -116,11 +122,11 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 
 	// 将箱子中的卡片分别放入箱子的bad_cards和good_cards中
 	for (const auto &item : filtered_result_) {
-		if (item.id == ObjectType::BAD || item.id == ObjectType::GOOD) {
-			cv::Point center = (item.box.tl() + item.box.br()) / 2.0;
+		if (item.id==ObjectType::BAD || item.id==ObjectType::GOOD) {
+			cv::Point center = (item.box.tl() + item.box.br())/2.0;
 			for (auto &box : boxes) {
 				if (box.output_params.box.contains(center)) {
-					if (item.id == ObjectType::BAD) {
+					if (item.id==ObjectType::BAD) {
 						box.bad_cards.emplace_back(item);
 					} else {
 						box.good_cards.emplace_back(item);
@@ -149,7 +155,8 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 	return true;
 }
 
-std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<OutputParams> &results,
+std::vector<OutputParams> YoloDetectorNode::filterResult(const cv::Mat &img,
+														 const std::vector<OutputParams> &results,
 														 bool left_to_right,
 														 bool second_shelf) {
 	std::vector<OutputParams> filteredResult;
@@ -159,9 +166,9 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 
 	// 先把所有的结果分成两类，一类是箱子，一类是卡片
 	for (const auto &item : results) {
-		if (item.id == ObjectType::BOX) {
+		if (item.id==ObjectType::BOX) {
 			boxes.emplace_back(item);
-		} else if (item.id == ObjectType::GOOD || item.id == ObjectType::BAD) {
+		} else if (item.id==ObjectType::GOOD || item.id==ObjectType::BAD) {
 			cards.emplace_back(item);
 		}
 	}
@@ -176,12 +183,18 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 
 	// 按照矩形框的面积，对箱子进行排序，从大到小
 	std::sort(boxes.begin(), boxes.end(), [](const OutputParams &a, const OutputParams &b) {
-		return a.box.area() > b.box.area();
+	  return a.box.area() > b.box.area();
 	});
 
-	auto max_box_size = 6;
-	if (second_shelf) {
-		max_box_size = 8;
+	auto max_box_size = 0;
+	if (left_to_right && !second_shelf) {
+		max_box_size = 6;
+	} else if (!left_to_right && !second_shelf) {
+		max_box_size = 7;
+	} else if (!left_to_right && second_shelf) {
+		max_box_size = 7;
+	} else if (left_to_right && second_shelf) {
+		max_box_size = 7;
 	}
 
 	if (boxes.size() > max_box_size) {
@@ -189,74 +202,163 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const std::vector<Outpu
 	}
 
 	// 按照距离基点距离，对箱子进行排序，从小到大
-	if (second_shelf) {
-		std::sort(boxes.begin(), boxes.end(), [left_to_right, this](const OutputParams &a, const OutputParams &b) {
-		  cv::Point2i base_point;
-		  if (left_to_right) {
-			  base_point = cv::Point2i(0, 0);
-		  } else {
-			  base_point = cv::Point2i(this->latest_img_->width, 0);
-		  }
-		  cv::Point2i center_a = (a.box.tl() + a.box.br())/2;
-		  cv::Point2i center_b = (b.box.tl() + b.box.br())/2;
-		  auto distance_a = cv::norm(center_a - base_point);
-		  auto distance_b = cv::norm(center_b - base_point);
-		  return distance_a < distance_b;
-		});
+	std::sort(boxes.begin(), boxes.end(), [left_to_right, this](const OutputParams &a, const OutputParams &b) {
+	  cv::Point2i base_point;
+	  if (left_to_right) {
+		  base_point = cv::Point2i(0, 0);
+	  } else {
+		  base_point = cv::Point2i(this->latest_img_->width, 0);
+	  }
+	  cv::Point2i center_a = (a.box.tl() + a.box.br())/2;
+	  cv::Point2i center_b = (b.box.tl() + b.box.br())/2;
+	  auto distance_a = cv::norm(center_a - base_point);
+	  auto distance_b = cv::norm(center_b - base_point);
+	  return distance_a < distance_b;
+	});
 
-		if (boxes.size() > 6) {
-			boxes.resize(6);
-		}
+	// 拷贝一份boxes
+	auto top_2 = boxes;
+	// 按照y坐标，对箱子进行排序，从上到下
+	std::sort(top_2.begin(), top_2.end(), [](const OutputParams &a, const OutputParams &b) {
+	  return a.box.y < b.box.y;
+	});
+	if (top_2.size() > 2) {
+		top_2.resize(2);
+	}
+	ROS_INFO("Top 2 size = %zu", top_2.size());
+
+	// top_0_box是top_2中x最小或最大的那个
+	OutputParams top_0_box;
+	if (left_to_right) {
+		top_0_box = *std::min_element(top_2.begin(), top_2.end(), [](const OutputParams &a, const OutputParams &b) {
+			return a.box.x < b.box.x;
+		});
+	} else {
+		top_0_box = *std::max_element(top_2.begin(), top_2.end(), [](const OutputParams &a, const OutputParams &b) {
+			return a.box.x < b.box.x;
+		});
 	}
 
-	// 再按照x坐标，对箱子进行排序，从左到右，如果left_to_right为false，则从右到左
-	std::vector<OutputParams> left_3;
-	std::vector<OutputParams> right_3;
-	std::sort(boxes.begin(), boxes.end(), [left_to_right](const OutputParams &a, const OutputParams &b) {
-		if (left_to_right) {
-			return a.box.x < b.box.x;
-		} else {
-			return a.box.x > b.box.x;
+	auto top_0_box_center = (top_0_box.box.tl() + top_0_box.box.br())/2;
+	OutputParams top_1_box;
+	for (auto &box : top_2) {
+		if (box.box.x==top_0_box.box.x && box.box.y==top_0_box.box.y) {
+			ROS_INFO("Skip top_0_box");
+			continue;
 		}
+		auto box_center = (box.box.tl() + box.box.br())/2;
+		auto diff = abs(box_center.y - top_0_box_center.y);
+		ROS_INFO("Diff = %d", diff);
+		top_1_box = box;
+//		if (diff <= 25) {
+//			top_1_box = box;
+//			break;
+//		}
+	}
+	top_2.clear();
+	top_2.emplace_back(top_0_box);
+	top_2.emplace_back(top_1_box);
+	// 按x坐标排序
+	std::sort(top_2.begin(), top_2.end(), [](const OutputParams &a, const OutputParams &b) {
+	  return a.box.x < b.box.x;
+	});
+
+	// 删除boxes中的top_2
+	boxes.erase(
+		std::remove_if(boxes.begin(), boxes.end(), [&top_2](const OutputParams &box) {
+		  return std::any_of(top_2.begin(), top_2.end(), [&box](const OutputParams &top) {
+			return box.box.x==top.box.x && box.box.y==top.box.y;
+		  });
+		}),
+		boxes.end());
+
+	// 再按照x坐标，对箱子进行排序，从左到右，如果left_to_right为false，则从右到左
+	std::vector<OutputParams> left_2;
+	std::vector<OutputParams> right_2;
+	std::sort(boxes.begin(), boxes.end(), [left_to_right](const OutputParams &a, const OutputParams &b) {
+	  if (left_to_right) {
+		  return a.box.x < b.box.x;
+	  } else {
+		  return a.box.x > b.box.x;
+	  }
 	});
 
 	// 将排序后的箱子分别放入left_3和right_3中
-	if (boxes.size() > 6) {
-		boxes.resize(6);
-	} else if (boxes.size() < 6) {
+	if (boxes.size() > 4) {
+		boxes.resize(4);
+	} else if (boxes.size() < 4) {
 		ROS_ERROR("Invalid box size!");
 		return filteredResult;
 	}
 
 	if (left_to_right) {
-		left_3 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 3);
-		right_3 = std::vector<OutputParams>(boxes.begin() + 3, boxes.end());
+		left_2 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 2);
+		right_2 = std::vector<OutputParams>(boxes.begin() + 2, boxes.end());
 	} else {
-		right_3 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 3);
-		left_3 = std::vector<OutputParams>(boxes.begin() + 3, boxes.end());
+		right_2 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 2);
+		left_2 = std::vector<OutputParams>(boxes.begin() + 2, boxes.end());
 	}
 	// 按照y坐标，对箱子进行排序，从上到下
-	std::sort(left_3.begin(), left_3.end(), [](const OutputParams &a, const OutputParams &b) {
-		return a.box.y < b.box.y;
+	std::sort(left_2.begin(), left_2.end(), [](const OutputParams &a, const OutputParams &b) {
+	  return a.box.y < b.box.y;
 	});
-	std::sort(right_3.begin(), right_3.end(), [](const OutputParams &a, const OutputParams &b) {
-		return a.box.y < b.box.y;
+	std::sort(right_2.begin(), right_2.end(), [](const OutputParams &a, const OutputParams &b) {
+	  return a.box.y < b.box.y;
 	});
+
 
 	// 移除所有矩形框中心点不在box内的card
 	cards.erase(
-		std::remove_if(cards.begin(), cards.end(), [&boxes](const OutputParams &card) {
-			cv::Point center = (card.box.tl() + card.box.br()) / 2.0;
+		std::remove_if(cards.begin(), cards.end(), [&boxes, &top_2](const OutputParams &card) {
+		  cv::Point center = (card.box.tl() + card.box.br())/2.0;
 
-			return std::none_of(boxes.begin(), boxes.end(), [&center](const OutputParams &box) {
-				return box.box.contains(center);
-			});
+		  bool flag;
+		  flag = std::none_of(boxes.begin(), boxes.end(), [&center](const OutputParams &box) {
+			return box.box.contains(center);
+		  }) && std::none_of(top_2.begin(), top_2.end(), [&center](const OutputParams &box) {
+			return box.box.contains(center);
+		  });
+
+		  return flag;
 		}),
 		cards.end());
 
-	// 将排序后的箱子放入filteredResult中，先放left_3，再放right_3
-	filteredResult.insert(filteredResult.end(), left_3.begin(), left_3.end());
-	filteredResult.insert(filteredResult.end(), right_3.begin(), right_3.end());
+	// 将排序后的箱子放入filteredResult中，先放left_2，再放right_2
+	filteredResult.insert(filteredResult.end(), top_2.at(0));
+	filteredResult.insert(filteredResult.end(), left_2.begin(), left_2.end());
+	filteredResult.insert(filteredResult.end(), top_2.at(1));
+	filteredResult.insert(filteredResult.end(), right_2.begin(), right_2.end());
+
+	// 可视化
+	for (auto i = 0; i < filteredResult.size(); i++) {
+		if (i==0 || i==3) {
+			cv::putText(img,
+						"TOP[" + std::to_string(i) + "]",
+						filteredResult[i].box.tl(),
+						cv::FONT_HERSHEY_PLAIN,
+						1,
+						cv::Scalar(0, 255, 0),
+						1);
+		} else if (i==1 || i==2) {
+			cv::putText(img,
+						"LEFT[" + std::to_string(i) + "]",
+						filteredResult[i].box.tl(),
+						cv::FONT_HERSHEY_PLAIN,
+						1,
+						cv::Scalar(0, 255, 0),
+						1);
+		} else if (i==4 || i==5) {
+			cv::putText(img,
+						"RIGHT[" + std::to_string(i) + "]",
+						filteredResult[i].box.tl(),
+						cv::FONT_HERSHEY_PLAIN,
+						1,
+						cv::Scalar(0, 255, 0),
+						1);
+		} else {
+			ROS_ERROR("Invalid index!");
+		}
+	}
 
 	// 将所有的卡片放入filteredResult中
 	filteredResult.insert(filteredResult.end(), cards.begin(), cards.end());

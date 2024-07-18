@@ -6,7 +6,7 @@
 
     <!-- is_video 参数为0时读入图片 参数为1时读入视频-->
     <param name="is_video" type="int" value="0"/>
-    <param name="path" value="/home/wolala/文档/TianTu_Code/TianTu2024_WS/images/20240713163453_raw_0.jpg"/>
+    <param name="path" value="/media/wolala/NTFS1/TianTuDataset/20240718_images/img_error/20240715174656_raw_3.jpg"/>
   </node>
 
 </launch>

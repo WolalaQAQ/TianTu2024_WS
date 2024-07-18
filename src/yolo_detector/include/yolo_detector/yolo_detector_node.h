@@ -51,7 +51,8 @@ private:
 
 	int detect_count_ = 0;
 
-	std::vector<OutputParams> filterResult(const std::vector<OutputParams> &results,
+	std::vector<OutputParams> filterResult(const cv::Mat &img,
+										   const std::vector<OutputParams> &results,
 										   bool left_to_right,
 										   bool second_shelf);
 
