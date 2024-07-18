@@ -88,7 +88,7 @@ void RobotDecision::moveToTarget() {
 			moving_ = false;
 		}
 
-		std::this_thread::sleep_for(std::chrono::seconds(3));
+		std::this_thread::sleep_for(std::chrono::seconds(2));
 	} else if (moving_ && !arrival_) {
 		ROS_INFO("Moving to target point %d", mission_id_);
 		// No operation needed, just logging the state
