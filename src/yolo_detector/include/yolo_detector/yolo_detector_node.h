@@ -26,6 +26,20 @@ struct Box {
 	std::vector<OutputParams> good_cards;
 };
 
+class Line {
+public:
+	double A,B,C;
+
+	Line() = delete;
+	Line(const cv::Point2f &p1, const cv::Point2f &p2) {
+		A = p2.y - p1.y;
+		B = p1.x - p2.x;
+		C = p2.x * p1.y - p1.x * p2.y;
+	}
+};
+
+cv::Point2f getIntersection(const Line& line1, const Line& line2);
+
 class YoloDetectorNode {
 public:
 	YoloDetectorNode() = delete;
@@ -51,7 +65,7 @@ private:
 
 	int detect_count_ = 0;
 
-	std::vector<OutputParams> filterResult(const cv::Mat &img,
+	std::vector<OutputParams> filterResult(cv::Mat &img,
 										   const std::vector<OutputParams> &results,
 										   bool left_to_right,
 										   bool second_shelf,
@@ -59,7 +73,6 @@ private:
 
 	void getImageCallback(const sensor_msgs::ImageConstPtr &msg);
 	bool startDetectCallback(yolo_detector::StartDetect::Request &req, yolo_detector::StartDetect::Response &res);
-
 };
 
 #define BUILD_SRC_YOLO_DETECTOR_INCLUDE_YOLO_DETECTOR_YOLO_DETECTOR_NODE_H
