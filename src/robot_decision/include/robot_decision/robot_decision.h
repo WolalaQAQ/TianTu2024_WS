@@ -44,6 +44,7 @@ private:
 
 	std::vector<double> target_points_flat_;
 	std::vector<Eigen::Vector3d> target_points_;
+	bool qualifier_ = false;
 
 	std::map<ShelfLocation, yolo_detector::BoxInfo> shelf_info_;
 

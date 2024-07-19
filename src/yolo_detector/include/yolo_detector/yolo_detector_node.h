@@ -54,7 +54,8 @@ private:
 	std::vector<OutputParams> filterResult(const cv::Mat &img,
 										   const std::vector<OutputParams> &results,
 										   bool left_to_right,
-										   bool second_shelf);
+										   bool second_shelf,
+										   bool qualifier);
 
 	void getImageCallback(const sensor_msgs::ImageConstPtr &msg);
 	bool startDetectCallback(yolo_detector::StartDetect::Request &req, yolo_detector::StartDetect::Response &res);

@@ -75,7 +75,7 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 	}
 
 	cv::Mat filteredImg = image_raw_->image.clone();
-	auto filtered_result_ = filterResult(filteredImg, output, req.left_to_right, req.second_shelf);
+	auto filtered_result_ = filterResult(filteredImg, output, req.left_to_right, req.second_shelf, req.qualifier);
 	detector_.DrawResult(filteredImg, filtered_result_, false);
 	if (filtered_result_.size() < 6) {
 		ROS_ERROR("Invalid box info size!");
@@ -158,7 +158,8 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 std::vector<OutputParams> YoloDetectorNode::filterResult(const cv::Mat &img,
 														 const std::vector<OutputParams> &results,
 														 bool left_to_right,
-														 bool second_shelf) {
+														 bool second_shelf,
+														 bool qualifier) {
 	std::vector<OutputParams> filteredResult;
 
 	std::vector<OutputParams> boxes;
@@ -195,6 +196,10 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const cv::Mat &img,
 		max_box_size = 7;
 	} else if (left_to_right && second_shelf) {
 		max_box_size = 7;
+	}
+
+	if (qualifier) {
+		max_box_size -= 2;
 	}
 
 	if (boxes.size() > max_box_size) {
@@ -273,8 +278,8 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const cv::Mat &img,
 		boxes.end());
 
 	// 再按照x坐标，对箱子进行排序，从左到右，如果left_to_right为false，则从右到左
-	std::vector<OutputParams> left_2;
-	std::vector<OutputParams> right_2;
+	std::vector<OutputParams> left_boxes;
+	std::vector<OutputParams> right_boxes;
 	std::sort(boxes.begin(), boxes.end(), [left_to_right](const OutputParams &a, const OutputParams &b) {
 	  if (left_to_right) {
 		  return a.box.x < b.box.x;
@@ -283,26 +288,41 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const cv::Mat &img,
 	  }
 	});
 
-	// 将排序后的箱子分别放入left_3和right_3中
-	if (boxes.size() > 4) {
-		boxes.resize(4);
-	} else if (boxes.size() < 4) {
+	// 将排序后的箱子分别放入left_boxes和right_boxes中
+	auto bottom_box_max_size = 4;
+	if (qualifier) {
+		bottom_box_max_size = 2;
+	}
+
+	if (boxes.size() > bottom_box_max_size) {
+		boxes.resize(bottom_box_max_size);
+	} else if (boxes.size() < bottom_box_max_size) {
 		ROS_ERROR("Invalid box size!");
 		return filteredResult;
 	}
 
-	if (left_to_right) {
-		left_2 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 2);
-		right_2 = std::vector<OutputParams>(boxes.begin() + 2, boxes.end());
+	if (!qualifier) {
+		if (left_to_right) {
+			left_boxes = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 2);
+			right_boxes = std::vector<OutputParams>(boxes.begin() + 2, boxes.end());
+		} else {
+			right_boxes = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 2);
+			left_boxes = std::vector<OutputParams>(boxes.begin() + 2, boxes.end());
+		}
 	} else {
-		right_2 = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 2);
-		left_2 = std::vector<OutputParams>(boxes.begin() + 2, boxes.end());
+		if (left_to_right) {
+			left_boxes = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 1);
+			right_boxes = std::vector<OutputParams>(boxes.begin() + 1, boxes.end());
+		} else {
+			right_boxes = std::vector<OutputParams>(boxes.begin(), boxes.begin() + 1);
+			left_boxes = std::vector<OutputParams>(boxes.begin() + 1, boxes.end());
+		}
 	}
 	// 按照y坐标，对箱子进行排序，从上到下
-	std::sort(left_2.begin(), left_2.end(), [](const OutputParams &a, const OutputParams &b) {
+	std::sort(left_boxes.begin(), left_boxes.end(), [](const OutputParams &a, const OutputParams &b) {
 	  return a.box.y < b.box.y;
 	});
-	std::sort(right_2.begin(), right_2.end(), [](const OutputParams &a, const OutputParams &b) {
+	std::sort(right_boxes.begin(), right_boxes.end(), [](const OutputParams &a, const OutputParams &b) {
 	  return a.box.y < b.box.y;
 	});
 
@@ -325,38 +345,68 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(const cv::Mat &img,
 
 	// 将排序后的箱子放入filteredResult中，先放left_2，再放right_2
 	filteredResult.insert(filteredResult.end(), top_2.at(0));
-	filteredResult.insert(filteredResult.end(), left_2.begin(), left_2.end());
+	filteredResult.insert(filteredResult.end(), left_boxes.begin(), left_boxes.end());
 	filteredResult.insert(filteredResult.end(), top_2.at(1));
-	filteredResult.insert(filteredResult.end(), right_2.begin(), right_2.end());
+	filteredResult.insert(filteredResult.end(), right_boxes.begin(), right_boxes.end());
 
 	// 可视化
 	for (auto i = 0; i < filteredResult.size(); i++) {
-		if (i==0 || i==3) {
-			cv::putText(img,
-						"TOP[" + std::to_string(i) + "]",
-						filteredResult[i].box.tl(),
-						cv::FONT_HERSHEY_PLAIN,
-						1,
-						cv::Scalar(0, 255, 0),
-						1);
-		} else if (i==1 || i==2) {
-			cv::putText(img,
-						"LEFT[" + std::to_string(i) + "]",
-						filteredResult[i].box.tl(),
-						cv::FONT_HERSHEY_PLAIN,
-						1,
-						cv::Scalar(0, 255, 0),
-						1);
-		} else if (i==4 || i==5) {
-			cv::putText(img,
-						"RIGHT[" + std::to_string(i) + "]",
-						filteredResult[i].box.tl(),
-						cv::FONT_HERSHEY_PLAIN,
-						1,
-						cv::Scalar(0, 255, 0),
-						1);
+		if (!qualifier) {
+			if (i==0 || i==3) {
+				cv::putText(img,
+							"TOP[" + std::to_string(i) + "]",
+							filteredResult[i].box.tl(),
+							cv::FONT_HERSHEY_PLAIN,
+							1,
+							cv::Scalar(0, 255, 0),
+							1);
+			} else if (i==1 || i==2) {
+				cv::putText(img,
+							"LEFT[" + std::to_string(i) + "]",
+							filteredResult[i].box.tl(),
+							cv::FONT_HERSHEY_PLAIN,
+							1,
+							cv::Scalar(0, 255, 0),
+							1);
+			} else if (i==4 || i==5) {
+				cv::putText(img,
+							"RIGHT[" + std::to_string(i) + "]",
+							filteredResult[i].box.tl(),
+							cv::FONT_HERSHEY_PLAIN,
+							1,
+							cv::Scalar(0, 255, 0),
+							1);
+			} else {
+				ROS_ERROR("Invalid index!");
+			}
 		} else {
-			ROS_ERROR("Invalid index!");
+			if (i==0 || i== 2) {
+				cv::putText(img,
+							"TOP[" + std::to_string(i) + "]",
+							filteredResult[i].box.tl(),
+							cv::FONT_HERSHEY_PLAIN,
+							1,
+							cv::Scalar(0, 255, 0),
+							1);
+			} else if (i==1) {
+				cv::putText(img,
+							"LEFT[" + std::to_string(i) + "]",
+							filteredResult[i].box.tl(),
+							cv::FONT_HERSHEY_PLAIN,
+							1,
+							cv::Scalar(0, 255, 0),
+							1);
+			} else if (i==3) {
+				cv::putText(img,
+							"RIGHT[" + std::to_string(i) + "]",
+							filteredResult[i].box.tl(),
+							cv::FONT_HERSHEY_PLAIN,
+							1,
+							cv::Scalar(0, 255, 0),
+							1);
+			} else {
+				ROS_ERROR("Invalid index!");
+			}
 		}
 	}
 

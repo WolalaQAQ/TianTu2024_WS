@@ -5,6 +5,7 @@
 RobotDecision::RobotDecision(ros::NodeHandle &nh) : nh_(nh) {
 	ROS_INFO("RobotDecision Node Started");
 	nh_.getParam("/target_points", target_points_flat_);
+	nh_.getParam("/qualifier", qualifier_);
 	if (target_points_flat_.empty() || target_points_flat_.size() % 3 != 0) {
 		ROS_ERROR("Invalid target points");
 		return;
@@ -100,6 +101,12 @@ void RobotDecision::moveToTarget() {
 void RobotDecision::startDetect() {
 	ROS_INFO("Start Detecting for mission %d", mission_id_);
 	yolo_detector::StartDetect srv;
+	if (qualifier_) {
+		srv.request.qualifier = true;
+	} else {
+		srv.request.qualifier = false;
+	}
+
 	if (mission_id_ == 0) {
 		srv.request.left_to_right = true;
 		srv.request.second_shelf = false;
@@ -115,13 +122,12 @@ void RobotDecision::startDetect() {
 	} else if (mission_id_ == 2) {
 		ROS_INFO("Mission 2 is special, detect nothing!");
 		return;
-	}else if (mission_id_ == 10){
+	}else if (mission_id_ == 10) {
 		ROS_INFO("Recv CB,carry out mission 3");
 		mission_id_ =3;
 	}
 
 	// 我没想好怎么处理重试的逻辑，所以这里直接用goto了
-	// 66666666666666
 SERVICE_CALL:
 	bool flag = detect_client_.call(srv);
 
@@ -132,46 +138,72 @@ SERVICE_CALL:
 		}
 		if (srv.response.success) {
 			ROS_INFO("Detect service called with true");
-			switch (mission_id_) {
-			case 0:
-				shelf_info_[{1, 1}] = srv.response.detect_info.box_infos.at(0);
-				shelf_info_[{1, 5}] = srv.response.detect_info.box_infos.at(1);
-				shelf_info_[{1, 9}] = srv.response.detect_info.box_infos.at(2);
-				shelf_info_[{1, 2}] = srv.response.detect_info.box_infos.at(3);
-				shelf_info_[{1, 6}] = srv.response.detect_info.box_infos.at(4);
-				shelf_info_[{1, 10}] = srv.response.detect_info.box_infos.at(5);
-				break;
-			case 1:
-				shelf_info_[{1, 3}] = srv.response.detect_info.box_infos.at(0);
-				shelf_info_[{1, 7}] = srv.response.detect_info.box_infos.at(1);
-				shelf_info_[{1, 11}] = srv.response.detect_info.box_infos.at(2);
-				shelf_info_[{1, 4}] = srv.response.detect_info.box_infos.at(3);
-				shelf_info_[{1, 8}] = srv.response.detect_info.box_infos.at(4);
-				shelf_info_[{1, 12}] = srv.response.detect_info.box_infos.at(5);
-				break;
-			case 3:
-				shelf_info_[{2, 3}] = srv.response.detect_info.box_infos.at(0);
-				shelf_info_[{2, 7}] = srv.response.detect_info.box_infos.at(1);
-				shelf_info_[{2, 11}] = srv.response.detect_info.box_infos.at(2);
-				shelf_info_[{2, 4}] = srv.response.detect_info.box_infos.at(3);
-				shelf_info_[{2, 8}] = srv.response.detect_info.box_infos.at(4);
-				shelf_info_[{2, 12}] = srv.response.detect_info.box_infos.at(5);
-				break;
-			case 4:
-				shelf_info_[{2, 1}] = srv.response.detect_info.box_infos.at(0);
-				shelf_info_[{2, 5}] = srv.response.detect_info.box_infos.at(1);
-				shelf_info_[{2, 9}] = srv.response.detect_info.box_infos.at(2);
-				shelf_info_[{2, 2}] = srv.response.detect_info.box_infos.at(3);
-				shelf_info_[{2, 6}] = srv.response.detect_info.box_infos.at(4);
-				shelf_info_[{2, 10}] = srv.response.detect_info.box_infos.at(5);
-				break;
+			if (!qualifier_) {
+				switch (mission_id_) {
+				case 0: shelf_info_[{1, 1}] = srv.response.detect_info.box_infos.at(0);
+					shelf_info_[{1, 5}] = srv.response.detect_info.box_infos.at(1);
+					shelf_info_[{1, 9}] = srv.response.detect_info.box_infos.at(2);
+					shelf_info_[{1, 2}] = srv.response.detect_info.box_infos.at(3);
+					shelf_info_[{1, 6}] = srv.response.detect_info.box_infos.at(4);
+					shelf_info_[{1, 10}] = srv.response.detect_info.box_infos.at(5);
+					break;
+				case 1: shelf_info_[{1, 3}] = srv.response.detect_info.box_infos.at(0);
+					shelf_info_[{1, 7}] = srv.response.detect_info.box_infos.at(1);
+					shelf_info_[{1, 11}] = srv.response.detect_info.box_infos.at(2);
+					shelf_info_[{1, 4}] = srv.response.detect_info.box_infos.at(3);
+					shelf_info_[{1, 8}] = srv.response.detect_info.box_infos.at(4);
+					shelf_info_[{1, 12}] = srv.response.detect_info.box_infos.at(5);
+					break;
+				case 3: shelf_info_[{2, 3}] = srv.response.detect_info.box_infos.at(0);
+					shelf_info_[{2, 7}] = srv.response.detect_info.box_infos.at(1);
+					shelf_info_[{2, 11}] = srv.response.detect_info.box_infos.at(2);
+					shelf_info_[{2, 4}] = srv.response.detect_info.box_infos.at(3);
+					shelf_info_[{2, 8}] = srv.response.detect_info.box_infos.at(4);
+					shelf_info_[{2, 12}] = srv.response.detect_info.box_infos.at(5);
+					break;
+				case 4: shelf_info_[{2, 1}] = srv.response.detect_info.box_infos.at(0);
+					shelf_info_[{2, 5}] = srv.response.detect_info.box_infos.at(1);
+					shelf_info_[{2, 9}] = srv.response.detect_info.box_infos.at(2);
+					shelf_info_[{2, 2}] = srv.response.detect_info.box_infos.at(3);
+					shelf_info_[{2, 6}] = srv.response.detect_info.box_infos.at(4);
+					shelf_info_[{2, 10}] = srv.response.detect_info.box_infos.at(5);
+					break;
 
-			case 2:
-				// No operation needed
-				break;
-			default:
-				ROS_ERROR("Unknown mission id");
-				break;
+				case 2:
+					// No operation needed
+					break;
+				default: ROS_ERROR("Unknown mission id");
+					break;
+				}
+			} else {
+				switch (mission_id_) {
+				case 0: shelf_info_[{1, 1}] = srv.response.detect_info.box_infos.at(0);
+					shelf_info_[{1, 9}] = srv.response.detect_info.box_infos.at(1);
+					shelf_info_[{1, 2}] = srv.response.detect_info.box_infos.at(2);
+					shelf_info_[{1, 10}] = srv.response.detect_info.box_infos.at(3);
+					break;
+				case 1: shelf_info_[{1, 3}] = srv.response.detect_info.box_infos.at(0);
+					shelf_info_[{1, 11}] = srv.response.detect_info.box_infos.at(1);
+					shelf_info_[{1, 4}] = srv.response.detect_info.box_infos.at(2);
+					shelf_info_[{1, 12}] = srv.response.detect_info.box_infos.at(3);
+					break;
+				case 3: shelf_info_[{2, 3}] = srv.response.detect_info.box_infos.at(0);
+					shelf_info_[{2, 11}] = srv.response.detect_info.box_infos.at(1);
+					shelf_info_[{2, 4}] = srv.response.detect_info.box_infos.at(2);
+					shelf_info_[{2, 12}] = srv.response.detect_info.box_infos.at(3);
+					break;
+				case 4: shelf_info_[{2, 1}] = srv.response.detect_info.box_infos.at(0);
+					shelf_info_[{2, 9}] = srv.response.detect_info.box_infos.at(1);
+					shelf_info_[{2, 2}] = srv.response.detect_info.box_infos.at(2);
+					shelf_info_[{2, 10}] = srv.response.detect_info.box_infos.at(3);
+					break;
+
+				case 2:
+					// No operation needed
+					break;
+				default: ROS_ERROR("Unknown mission id");
+					break;
+				}
 			}
 			current_state_ = 1;
 			mission_id_++;
