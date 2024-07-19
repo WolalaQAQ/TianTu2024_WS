@@ -128,13 +128,18 @@ void RobotDecision::startDetect() {
 	}
 
 	// 我没想好怎么处理重试的逻辑，所以这里直接用goto了
+	static int retry_count = 0;
 SERVICE_CALL:
 	bool flag = detect_client_.call(srv);
 
 	if (flag) {
 		if (srv.response.detect_info.box_infos.size() != 6) {
 			ROS_ERROR("Invalid box info size, attempt to call detect service again");
-			goto SERVICE_CALL;
+			retry_count++;
+			if(retry_count <= 3){
+				goto SERVICE_CALL;
+			}
+			
 		}
 		if (srv.response.success) {
 			ROS_INFO("Detect service called with true");
@@ -207,11 +212,14 @@ SERVICE_CALL:
 			}
 			current_state_ = 1;
 			mission_id_++;
+			retry_count = 0;
 		} else {
 			ROS_ERROR("Detect service returned false");
+			// retry_count = 0;
 		}
 	} else {
 		ROS_ERROR("Failed to call detect service");
+		// retry_count = 0;
 	}
 }
 
