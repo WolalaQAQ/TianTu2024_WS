@@ -250,6 +250,7 @@ void RobotDecision::startDetect() {
 						break;
 					}
 				}
+				break;
 			} else {
 				ROS_ERROR("Detect service returned false");
 				retry_count++;
