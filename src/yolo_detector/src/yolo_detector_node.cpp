@@ -47,6 +47,12 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 		return false;
 	}
 
+	// 转换成YYYY/MM/DD HH:MM:SS格式
+	time_t now = time(nullptr);
+	tm *ltm = localtime(&now);
+	char time_str[20];
+	strftime(time_str, sizeof(time_str), "%Y%m%d%H%M%S", ltm);
+
 	cv_bridge::CvImageConstPtr image_raw_;
 	try {
 		image_raw_ = cv_bridge::toCvShare(latest_img_, "bgr8");
@@ -54,6 +60,12 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 		ROS_ERROR("cv_bridge exception: %s", e.what());
 		res.success = false;
 		return false;
+	}
+	if (save_marker_image_) {
+		std::filesystem::path raw_image_save_path =
+			image_save_path_ / (std::string(time_str) + "_raw_" + std::to_string(detect_count_) + ".jpg");
+		cv::imwrite(raw_image_save_path, image_raw_->image);
+		ROS_INFO("Saved raw image to %s", raw_image_save_path.c_str());
 	}
 
 	std::vector<OutputParams> output;
@@ -66,6 +78,12 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 		res.success = false;
 		return false;
 	}
+	if (save_marker_image_) {
+		std::filesystem::path marker_image_save_path =
+			image_save_path_ / (std::string(time_str) + "_marker_" + std::to_string(detect_count_) + ".jpg");
+		cv::imwrite(marker_image_save_path, markedImg);
+		ROS_INFO("Saved marked image to %s", marker_image_save_path.c_str());
+	}
 
 	if (image_marked_pub_.getNumSubscribers() > 0) {
 		sensor_msgs::ImagePtr msg_marked = cv_bridge::CvImage(std_msgs::Header(), "bgr8", markedImg).toImageMsg();
@@ -74,32 +92,20 @@ bool YoloDetectorNode::startDetectCallback(yolo_detector::StartDetect::Request &
 	}
 
 	cv::Mat filteredImg = image_raw_->image.clone();
-	auto filtered_result_ = filterResult(filteredImg, output, req.left_to_right, req.second_shelf, req.qualifier);
+	std::vector<OutputParams> filtered_result_;
+	try {
+		filtered_result_ = filterResult(filteredImg, output, req.left_to_right, req.second_shelf, req.qualifier);
+	} catch (const std::exception &e) {
+		ROS_ERROR("Failed to filter result: %s", e.what());
+		res.success = false;
+		return false;
+	}
 	detector_.DrawResult(filteredImg, filtered_result_, false);
-	//	if (filtered_result_.size() < 6) {
-	//		ROS_ERROR("Invalid box info size!");
-	//		res.success = false;
-	//		return false;
-	//	}
 
 	if (save_marker_image_) {
-		// 转换成YYYY/MM/DD HH:MM:SS格式
-		time_t now = time(nullptr);
-		tm *ltm = localtime(&now);
-		char time_str[20];
-		strftime(time_str, sizeof(time_str), "%Y%m%d%H%M%S", ltm);
-
-		std::filesystem::path raw_image_save_path =
-			image_save_path_ / (std::string(time_str) + "_raw_" + std::to_string(detect_count_) + ".jpg");
-		std::filesystem::path marker_image_save_path =
-			image_save_path_ / (std::string(time_str) + "_marker_" + std::to_string(detect_count_) + ".jpg");
 		std::filesystem::path filtered_image_save_path =
 			image_save_path_ / (std::string(time_str) + "_filtered_" + std::to_string(detect_count_) + ".jpg");
-		cv::imwrite(raw_image_save_path, image_raw_->image);
-		cv::imwrite(marker_image_save_path, markedImg);
 		cv::imwrite(filtered_image_save_path, filteredImg);
-		ROS_INFO("Saved raw image to %s", raw_image_save_path.c_str());
-		ROS_INFO("Saved marked image to %s", marker_image_save_path.c_str());
 		ROS_INFO("Saved filtered image to %s", filtered_image_save_path.c_str());
 	}
 
@@ -444,6 +450,8 @@ cv::Point2f getIntersection(const Line &line1, const Line &line2) {
 	double determinant = A1 * B2 - A2 * B1;
 
 	if (std::fabs(determinant) < 1e-10) {// determinant is close to 0, lines are parallel or coincident
+		std::cerr << "Line1:" << A1 << "x + " << B1 << "y + " << C1 << " = 0" << std::endl;
+		std::cerr << "Line2:" << A2 << "x + " << B2 << "y + " << C2 << " = 0" << std::endl;
 		throw std::runtime_error("The lines are parallel or coincident and do not intersect at a unique point.");
 	}
 
