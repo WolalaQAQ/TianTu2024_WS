@@ -2,6 +2,9 @@
 
 #include <geometry_msgs/PoseStamped.h>
 
+#include "yolo_detector/BoxInfo.h"
+#include "yolo_detector/DetectInfo.h"
+
 RobotDecision::RobotDecision(ros::NodeHandle &nh) : nh_(nh) {
 	ROS_INFO("RobotDecision Node Started");
 	nh_.getParam("/target_points", target_points_flat_);
@@ -140,124 +143,131 @@ void RobotDecision::startDetect() {
 
 	// 我没想好怎么处理重试的逻辑，所以这里直接用goto了
 	static int retry_count = 0;
-SERVICE_CALL:
-	bool flag = detect_client_.call(srv);
+	while (true) {
+		bool flag = detect_client_.call(srv);
+		auto detect_info = srv.response.detect_info;
 
-	if (flag) {
-		auto box_size = 6;
-		if (qualifier_) {
-			box_size = 4;
-		}
-		if (srv.response.detect_info.box_infos.size() != box_size) {
-			ROS_ERROR("Invalid box info size, attempt to call detect service again");
-			retry_count++;
-			if (retry_count <= 3) {
-				goto SERVICE_CALL;
-			} else {
-				return;
+		if (flag) {
+			auto box_size = 6;
+			if (qualifier_) {
+				box_size = 4;
 			}
-		}
-		if (srv.response.success) {
-			ROS_INFO("Detect service called with true");
-			if (!qualifier_) {
-				switch (mission_id_) {
-				case 0:
-					shelf_info_[{1, 1}] = srv.response.detect_info.box_infos.at(0);
-					shelf_info_[{1, 5}] = srv.response.detect_info.box_infos.at(1);
-					shelf_info_[{1, 9}] = srv.response.detect_info.box_infos.at(2);
-					shelf_info_[{1, 2}] = srv.response.detect_info.box_infos.at(3);
-					shelf_info_[{1, 6}] = srv.response.detect_info.box_infos.at(4);
-					shelf_info_[{1, 10}] = srv.response.detect_info.box_infos.at(5);
-					break;
-				case 1:
-					shelf_info_[{1, 3}] = srv.response.detect_info.box_infos.at(0);
-					shelf_info_[{1, 7}] = srv.response.detect_info.box_infos.at(1);
-					shelf_info_[{1, 11}] = srv.response.detect_info.box_infos.at(2);
-					shelf_info_[{1, 4}] = srv.response.detect_info.box_infos.at(3);
-					shelf_info_[{1, 8}] = srv.response.detect_info.box_infos.at(4);
-					shelf_info_[{1, 12}] = srv.response.detect_info.box_infos.at(5);
-					break;
-				case 4:
-					shelf_info_[{2, 3}] = srv.response.detect_info.box_infos.at(0);
-					shelf_info_[{2, 7}] = srv.response.detect_info.box_infos.at(1);
-					shelf_info_[{2, 11}] = srv.response.detect_info.box_infos.at(2);
-					shelf_info_[{2, 4}] = srv.response.detect_info.box_infos.at(3);
-					shelf_info_[{2, 8}] = srv.response.detect_info.box_infos.at(4);
-					shelf_info_[{2, 12}] = srv.response.detect_info.box_infos.at(5);
-					break;
-				case 5:
-					shelf_info_[{2, 1}] = srv.response.detect_info.box_infos.at(0);
-					shelf_info_[{2, 5}] = srv.response.detect_info.box_infos.at(1);
-					shelf_info_[{2, 9}] = srv.response.detect_info.box_infos.at(2);
-					shelf_info_[{2, 2}] = srv.response.detect_info.box_infos.at(3);
-					shelf_info_[{2, 6}] = srv.response.detect_info.box_infos.at(4);
-					shelf_info_[{2, 10}] = srv.response.detect_info.box_infos.at(5);
-					break;
-
-				case 2:
-				case 3:
-					// No operation needed
-					break;
-				default:
-					ROS_ERROR("Unknown mission id");
+			if (detect_info.box_infos.size() != box_size) {
+				ROS_ERROR("Invalid box info size, attempt to call detect service again");
+				retry_count++;
+				if (retry_count <= 3) {
+					continue;
+				} else {
+					// 填充到box_size，防止后面的代码出错
+					for (int i = detect_info.box_infos.size(); i < box_size; i++) {
+						yolo_detector::BoxInfo box_info;
+						box_info.good_count = 0;
+						box_info.bad_count = 0;
+						detect_info.box_infos.push_back(box_info);
+					}
+					ROS_INFO("Retry count reached, fill box info with 0");
 					break;
 				}
-			} else {
-				switch (mission_id_) {
-				case 0:
-					shelf_info_[{1, 1}] = srv.response.detect_info.box_infos.at(0);
-					shelf_info_[{1, 9}] = srv.response.detect_info.box_infos.at(1);
-					shelf_info_[{1, 2}] = srv.response.detect_info.box_infos.at(2);
-					shelf_info_[{1, 10}] = srv.response.detect_info.box_infos.at(3);
-					break;
-				case 1:
-					shelf_info_[{1, 3}] = srv.response.detect_info.box_infos.at(0);
-					shelf_info_[{1, 11}] = srv.response.detect_info.box_infos.at(1);
-					shelf_info_[{1, 4}] = srv.response.detect_info.box_infos.at(2);
-					shelf_info_[{1, 12}] = srv.response.detect_info.box_infos.at(3);
-					break;
-				case 4:
-					shelf_info_[{2, 3}] = srv.response.detect_info.box_infos.at(0);
-					shelf_info_[{2, 11}] = srv.response.detect_info.box_infos.at(1);
-					shelf_info_[{2, 4}] = srv.response.detect_info.box_infos.at(2);
-					shelf_info_[{2, 12}] = srv.response.detect_info.box_infos.at(3);
-					break;
-				case 5:
-					shelf_info_[{2, 1}] = srv.response.detect_info.box_infos.at(0);
-					shelf_info_[{2, 9}] = srv.response.detect_info.box_infos.at(1);
-					shelf_info_[{2, 2}] = srv.response.detect_info.box_infos.at(2);
-					shelf_info_[{2, 10}] = srv.response.detect_info.box_infos.at(3);
-					break;
+			}
+			if (srv.response.success) {
+				ROS_INFO("Detect service called with true");
+				if (!qualifier_) {
+					switch (mission_id_) {
+					case 0:
+						shelf_info_[{1, 1}] = detect_info.box_infos.at(0);
+						shelf_info_[{1, 5}] = detect_info.box_infos.at(1);
+						shelf_info_[{1, 9}] = detect_info.box_infos.at(2);
+						shelf_info_[{1, 2}] = detect_info.box_infos.at(3);
+						shelf_info_[{1, 6}] = detect_info.box_infos.at(4);
+						shelf_info_[{1, 10}] = detect_info.box_infos.at(5);
+						break;
+					case 1:
+						shelf_info_[{1, 3}] = detect_info.box_infos.at(0);
+						shelf_info_[{1, 7}] = detect_info.box_infos.at(1);
+						shelf_info_[{1, 11}] = detect_info.box_infos.at(2);
+						shelf_info_[{1, 4}] = detect_info.box_infos.at(3);
+						shelf_info_[{1, 8}] = detect_info.box_infos.at(4);
+						shelf_info_[{1, 12}] = detect_info.box_infos.at(5);
+						break;
+					case 4:
+						shelf_info_[{2, 3}] = detect_info.box_infos.at(0);
+						shelf_info_[{2, 7}] = detect_info.box_infos.at(1);
+						shelf_info_[{2, 11}] = detect_info.box_infos.at(2);
+						shelf_info_[{2, 4}] = detect_info.box_infos.at(3);
+						shelf_info_[{2, 8}] = detect_info.box_infos.at(4);
+						shelf_info_[{2, 12}] = detect_info.box_infos.at(5);
+						break;
+					case 5:
+						shelf_info_[{2, 1}] = detect_info.box_infos.at(0);
+						shelf_info_[{2, 5}] = detect_info.box_infos.at(1);
+						shelf_info_[{2, 9}] = detect_info.box_infos.at(2);
+						shelf_info_[{2, 2}] = detect_info.box_infos.at(3);
+						shelf_info_[{2, 6}] = detect_info.box_infos.at(4);
+						shelf_info_[{2, 10}] = detect_info.box_infos.at(5);
+						break;
 
-				case 2:
-				case 3:
-					// No operation needed
-					break;
-				default:
-					ROS_ERROR("Unknown mission id");
+					case 2:
+					case 3:
+						// No operation needed
+						break;
+					default:
+						ROS_ERROR("Unknown mission id");
+						break;
+					}
+				} else {
+					switch (mission_id_) {
+					case 0:
+						shelf_info_[{1, 1}] = detect_info.box_infos.at(0);
+						shelf_info_[{1, 9}] = detect_info.box_infos.at(1);
+						shelf_info_[{1, 2}] = detect_info.box_infos.at(2);
+						shelf_info_[{1, 10}] = detect_info.box_infos.at(3);
+						break;
+					case 1:
+						shelf_info_[{1, 3}] = detect_info.box_infos.at(0);
+						shelf_info_[{1, 11}] = detect_info.box_infos.at(1);
+						shelf_info_[{1, 4}] = detect_info.box_infos.at(2);
+						shelf_info_[{1, 12}] = detect_info.box_infos.at(3);
+						break;
+					case 4:
+						shelf_info_[{2, 3}] = detect_info.box_infos.at(0);
+						shelf_info_[{2, 11}] = detect_info.box_infos.at(1);
+						shelf_info_[{2, 4}] = detect_info.box_infos.at(2);
+						shelf_info_[{2, 12}] = detect_info.box_infos.at(3);
+						break;
+					case 5:
+						shelf_info_[{2, 1}] = detect_info.box_infos.at(0);
+						shelf_info_[{2, 9}] = detect_info.box_infos.at(1);
+						shelf_info_[{2, 2}] = detect_info.box_infos.at(2);
+						shelf_info_[{2, 10}] = detect_info.box_infos.at(3);
+						break;
+
+					case 2:
+					case 3:
+						// No operation needed
+						break;
+					default:
+						ROS_ERROR("Unknown mission id");
+						break;
+					}
+				}
+			} else {
+				ROS_ERROR("Detect service returned false");
+				retry_count++;
+				if (retry_count <= 3) {
+					continue;
+				} else {
 					break;
 				}
 			}
 		} else {
-			ROS_ERROR("Detect service returned false");
+			ROS_ERROR("Failed to call detect service");
 			retry_count++;
 			if (retry_count <= 3) {
-				goto SERVICE_CALL;
+				continue;
 			} else {
-				return;
+				break;
 			}
-
-			// retry_count = 0;
 		}
-	} else {
-		ROS_ERROR("Failed to call detect service");
-		retry_count++;
-		if (retry_count <= 3) {
-			goto SERVICE_CALL;
-		} else {
-			return;
-		}
-		// retry_count = 0;
 	}
 	current_state_ = 1;
 	mission_id_++;
