@@ -6,6 +6,7 @@ RobotDecision::RobotDecision(ros::NodeHandle &nh) : nh_(nh) {
 	ROS_INFO("RobotDecision Node Started");
 	nh_.getParam("/target_points", target_points_flat_);
 	nh_.getParam("/qualifier", qualifier_);
+	ROS_INFO("Qualifier: %d", qualifier_);
 	if (target_points_flat_.empty() || target_points_flat_.size() % 3 != 0) {
 		ROS_ERROR("Invalid target points");
 		return;
@@ -133,13 +134,18 @@ SERVICE_CALL:
 	bool flag = detect_client_.call(srv);
 
 	if (flag) {
-		if (srv.response.detect_info.box_infos.size() != 6) {
+		auto box_size = 6;
+		if (qualifier_) {
+			box_size = 4;
+		}
+		if (srv.response.detect_info.box_infos.size() != box_size) {
 			ROS_ERROR("Invalid box info size, attempt to call detect service again");
 			retry_count++;
 			if(retry_count <= 3){
 				goto SERVICE_CALL;
+			} else {
+				return;
 			}
-			
 		}
 		if (srv.response.success) {
 			ROS_INFO("Detect service called with true");
@@ -210,17 +216,30 @@ SERVICE_CALL:
 					break;
 				}
 			}
-			current_state_ = 1;
-			mission_id_++;
-			retry_count = 0;
 		} else {
 			ROS_ERROR("Detect service returned false");
+			retry_count++;
+			if(retry_count <= 3){
+				goto SERVICE_CALL;
+			} else {
+				return;
+			}
+			
 			// retry_count = 0;
 		}
 	} else {
 		ROS_ERROR("Failed to call detect service");
+		retry_count++;
+		if(retry_count <= 3){
+			goto SERVICE_CALL;
+		} else {
+			return;
+		}
 		// retry_count = 0;
-	}
+	}			
+	current_state_ = 1;
+	mission_id_++;
+	retry_count = 0;
 }
 
 void RobotDecision::saveResult() {

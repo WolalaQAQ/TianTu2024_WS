@@ -13,8 +13,8 @@ public:
   void DrawResult(cv::Mat &srcImg, const std::vector<OutputParams> &output, bool putLabel);
 
 private:
-  float _classThreshold = 0.5;
-  float _nmsThreshold = 0.45;
+  float _classThreshold = 0.40;
+  float _nmsThreshold = 0.35;
 
   int _netWidth = 640;   //ONNX图片输入宽度
   int _netHeight = 640;  //ONNX图片输入高度
