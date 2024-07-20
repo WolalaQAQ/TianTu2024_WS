@@ -237,36 +237,18 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(cv::Mat &img,
 	cv::Point2i center_2 = (top_2[1].box.tl() + top_2[1].box.br()) / 2;
 	// 计算中点
 	cv::Point midpoint((center_1.x + center_2.x) / 2, (center_1.y + center_2.y) / 2);
+//	ROS_INFO("midpoint: %f, %f", midpoint.x, midpoint.y);
 
-	// 计算垂直平分线的斜率
-	double slope;
-	if (center_2.x - center_1.x != 0) {
-		slope = static_cast<double>(center_2.y - center_1.y) / (center_2.x - center_1.x);
-	} else {
-		slope = std::numeric_limits<double>::infinity();// 垂直线的斜率
-	}
-
-	// 定义垂直平分线的长度
-	int line_length = 36000;
-	double dx, dy;
-
-	// 计算垂直平分线的两个端点
-	if (slope != std::numeric_limits<double>::infinity()) {
-		double perp_slope = -1 / slope;
-		dx = line_length / std::sqrt(1 + perp_slope * perp_slope);
-		dy = perp_slope * dx;
-	} else {
-		dx = 0;
-		dy = line_length;
-	}
-
-	cv::Point pt1(midpoint.x - dx, midpoint.y - dy);
-	cv::Point pt2(midpoint.x + dx, midpoint.y + dy);
+	cv::Point pt1(midpoint.x, 0);
+	cv::Point pt2(midpoint.x, img.rows);
+//	ROS_INFO("pt1: %f, %f", pt1.x, pt1.y);
+//	ROS_INFO("pt2: %f, %f", pt2.x, pt2.y);
 	// 画原始线段
 	line(img, center_1, center_2, cv::Scalar(255, 0, 0), 2);
 
 	// 画垂直平分线
 	Line vertical_bisector = {pt1, pt2};
+//	ROS_INFO("vertical_bisector: %f, %f, %f", vertical_bisector.A, vertical_bisector.B, vertical_bisector.C);
 	line(img, pt1, pt2, cv::Scalar(0, 255, 0), 2);
 
 	// 画两个点
@@ -298,12 +280,14 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(cv::Mat &img,
 	cv::Point extended_pt2_2(extended_center_2.x + 35, img.rows);
 
 	Line extended_line1 = {extended_pt1_1, extended_pt1_2};
+//	ROS_INFO("extended_line1: %f, %f, %f", extended_line1.A, extended_line1.B, extended_line1.C);
 	cv::line(img, extended_pt1_1, extended_pt1_2, cv::Scalar(0, 255, 255), 2);
 	Line extended_line2 = {extended_pt2_1, extended_pt2_2};
+//	ROS_INFO("extended_line2: %f, %f, %f", extended_line2.A, extended_line2.B, extended_line2.C);
 	cv::line(img, extended_pt2_1, extended_pt2_2, cv::Scalar(0, 255, 255), 2);
 
-	//	cv::imshow("img", img);
-	//	cv::waitKey(0);
+//	cv::imshow("img", img);
+//	cv::waitKey(0);
 
 	// 删除boxes中的top_2
 	boxes.erase(
@@ -324,6 +308,7 @@ std::vector<OutputParams> YoloDetectorNode::filterResult(cv::Mat &img,
 	Line bottom_border = {
 		{0, static_cast<float>(img.rows)},
 		{static_cast<float>(img.cols), static_cast<float>(img.rows)}};
+//	ROS_INFO("bottom_border: %f, %f, %f", bottom_border.A, bottom_border.B, bottom_border.C);
 	//	Line bottom_border = {extended_pt1_2, extended_pt2_2};
 	cv::line(img, extended_pt1_2, extended_pt2_2, cv::Scalar(0, 255, 255), 2);
 
