@@ -245,7 +245,7 @@ SERVICE_CALL:
 void RobotDecision::saveResult() {
 	ROS_INFO("Saving result for mission %d", mission_id_);
 	std::ofstream file;
-	file.open("/home/tta/TianTu2024_WS/list_of_goods.csv");
+	file.open("/media/tta/E50E-BC97/tta/list_of_goods.csv");
 	// 检查文件是否成功打开
     if (!file) {
         std::cerr << "Unable to open or create file";

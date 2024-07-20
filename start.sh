@@ -1,6 +1,9 @@
 #!/bin/bash
 
 source ./devel/setup.sh
+
+udisksctl mount -b /dev/mmcblk1p1
+
 # 启动 myep_base.launch 文件
 roslaunch myep_bsae myep_base.launch & sleep 5;
 
