@@ -46,108 +46,21 @@ roslaunch robot_decision map_saver_tiantu.launch  # 建图结束后保存地图
 ````
 ## 待补充
 
-header: 
+rostopic pub /initialpose geometry_msgs/PoseWithCovarianceStamped "header:
   seq: 0
-  stamp: 
-    secs: 1719841441
-    nsecs: 441099649
-  frame_id: "map"
-pose: 
-  position: 
-    x: 2.0238935947418213
-    y: -1.0188543796539307
-    z: 0.0
-  orientation: 
-    x: 0.0
-    y: 0.0
-    z: 7.529745191438187e-05
-    w: 0.9999999971651469
-
-header: 
-  seq: 0
-  stamp: 
-    secs: 1719842450
-    nsecs: 914747614
-  frame_id: "map"
-pose: 
-  position: 
-    x: 5.202322959899902
-    y: -1.0604170560836792
-    z: 0.0
-  orientation: 
-    x: 0.0
-    y: 0.0
-    z: 0.01797217224256599
-    w: 0.9998384874692929
----
-header: 
-  seq: 2
-  stamp: 
-    secs: 1719842507
-    nsecs: 765902887
-  frame_id: "map"
-pose: 
-  position: 
-    x: 6.580988883972168
-    y: 2.2393453121185303
-    z: 0.0
-  orientation: 
-    x: 0.0
-    y: 0.0
-    z: 0.9992119548969758
-    w: 0.0396921804763107
----
----
-header: 
-  seq: 4
-  stamp: 
-    secs: 1719842554
-    nsecs: 618092299
-  frame_id: "map"
-pose: 
-  position: 
-    x: 5.251081466674805
-    y: 1.3968594074249268
-    z: 0.0
-  orientation: 
-    x: 0.0
-    y: 0.0
-    z: 0.0905946822060595
-    w: 0.9958878468763354
----
-header: 
-  seq: 6
-  stamp: 
-    secs: 1719842584
-    nsecs: 650757273
-  frame_id: "map"
-pose: 
-  position: 
-    x: 1.8356785774230957
-    y: 1.6096141338348389
-    z: 0.0
-  orientation: 
-    x: 0.0
-    y: 0.0
-    z: 0.00180444454175531
-    w: 0.9999983719886226
----
-
----
-header: 
-  seq: 7
-  stamp: 
-    secs: 1719842607
-    nsecs: 463056230
-  frame_id: "map"
-pose: 
-  position: 
-    x: -0.1554727554321289
-    y: -0.21910059452056885
-    z: 0.0
-  orientation: 
-    x: 0.0
-    y: 0.0
-    z: -0.022898669145267524
-    w: 0.9997377910989339
----
+  stamp:
+    secs: 0
+    nsecs: 0
+  frame_id: 'map'
+pose:
+  pose:
+    position:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+  covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]"
