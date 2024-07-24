@@ -9,7 +9,7 @@
 
     <remap from="detect_info" to="/yolo_detector/detect_info"/>
 
-    <param name="model_path" value="/home/tta/TianTu2024_WS/src/yolo_detector/model/2024-7-24.onnx"/>
+    <param name="model_path" value="/home/tta/TianTu2024_WS/src/yolo_detector/model/2024-7-25.onnx"/>
 
     <param name="save_marker_image" type="bool" value="true"/>
     <param name="save_image_path" value="/home/tta/TianTu2024_WS/images"/>
